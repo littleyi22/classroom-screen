@@ -4,20 +4,34 @@
     <meta charset="UTF-8">
     <title>段考時程表Pro</title>
     <style>
-        /* --- 1. 登入介面 --- */
+        /* --- 1. 登入介面與動畫 --- */
         #login-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.92); z-index: 9999;
             display: flex; justify-content: center; align-items: center;
             color: white; font-family: sans-serif;
         }
+        /* 存檔 Loading 動畫 */
+        #save-loading {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 10000;
+            flex-direction: column; justify-content: center; align-items: center; color: white;
+        }
+        .spinner {
+            width: 50px; height: 50px; border: 5px solid #f3f3f3;
+            border-top: 5px solid #27ae60; border-radius: 50%;
+            animation: spin 1s linear infinite; margin-bottom: 15px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
         .login-box {
             background: #fff; color: #333; padding: 40px; border-radius: 12px;
             width: 400px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.5);
         }
         .login-box h2 { margin-bottom: 20px; color: #2c3e50; }
         .login-box input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; }
-        .login-box button { width: 100%; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 10px; font-weight: bold; }
+        .login-box button { width: 100%; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        
         .btn-primary { background: #3498db; color: white; }
         .btn-guest { background: #95a5a6; color: white; }
         .login-box .link { color: #3498db; cursor: pointer; font-size: 14px; margin-top: 15px; display: block; }
@@ -31,9 +45,10 @@
         .main-board { background: #f0f2f5; overflow: hidden; }
 
         /* --- 3. 工具列與表格 --- */
-        .toolbar { background: rgba(255,255,255,0.85); padding: 8px; border-radius: 8px; margin-bottom: 15px; display: flex; gap: 5px; flex-wrap: wrap; backdrop-filter: blur(5px); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .toolbar { background: rgba(255,255,255,0.85); padding: 10px; border-radius: 8px; margin-bottom: 15px; display: flex; gap: 6px; flex-wrap: wrap; backdrop-filter: blur(5px); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .btn { padding: 5px 8px; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: white; font-size: 12px; font-weight: bold; }
-        .btn-save { background: #27ae60 !important; color: white !important; }
+        .btn:hover { background: #f8f9fa; }
+        .btn-save { background: #27ae60 !important; color: white !important; border: none; }
 
         .exam-table { width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.7); table-layout: fixed; }
         .exam-table th, .exam-table td { border: 1px solid #ccc; padding: 6px; text-align: center; overflow-wrap: anywhere; vertical-align: middle; position: relative; }
@@ -44,8 +59,7 @@
 
         .energy-bar { width: 100%; height: 14px; background: #eee; border-radius: 7px; overflow: hidden; }
         .energy-fill { width: 100%; height: 100%; background: #4caf50; transition: width 1s; }
-        .mgmt-cell { display: flex; gap: 4px; align-items: center; justify-content: center; }
-        .btn-sm { width: 24px; height: 24px; border: 1px solid #ddd; background: #fff; cursor: pointer; border-radius: 4px; font-size: 10px; font-weight: bold; }
+        .btn-sm { width: 24px; height: 24px; border: 1px solid #ddd; background: #fff; cursor: pointer; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; }
 
         /* --- 4. 小工具 --- */
         .widget { position: absolute; background: white; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); padding: 35px 15px 15px; min-width: 100px; resize: both; overflow: hidden; z-index: 10; }
@@ -56,6 +70,7 @@
 
         .clock-digit { font-family: monospace; font-weight: bold; text-align: center; pointer-events: none; width: 100%; }
         .style-hacker { background: #000 !important; color: #00ff00 !important; text-shadow: 0 0 5px #00ff00; border: 2px solid #333; }
+
         .hand { transform-origin: 50% 50%; stroke-linecap: round; transition: transform 0.5s; }
         .widget-note { background: #fff9c4; }
         .widget-announce { border-left: 8px solid #e74c3c; }
@@ -70,6 +85,12 @@
     </style>
 </head>
 <body>
+
+<!-- 存檔 Loading 遮罩 -->
+<div id="save-loading">
+    <div class="spinner"></div>
+    <div id="loading-text">雲端存檔中，請稍候...</div>
+</div>
 
 <div id="login-overlay">
     <div class="login-box">
@@ -128,8 +149,8 @@
             <button class="bg-btn" style="background:#fff3e0" onclick="setPanelBg('#fff3e0')">粉嫩橘</button>
             <button class="bg-btn" style="background:linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)" onclick="setPanelBg('linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)')">海洋藍</button>
             <button class="bg-btn" style="background:linear-gradient(135deg, #f6d365 0%, #fda085 100%)" onclick="setPanelBg('linear-gradient(135deg, #f6d365 0%, #fda085 100%)')">晨曦橘</button>
-            <button class="bg-btn" style="background:linear-gradient(to right, #243b55, #141e30)" onclick="setPanelBg('linear-gradient(to right, #243b55, #141e30)')">午夜藍</button>
-            <button class="bg-btn" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%)" onclick="setPanelBg('linear-gradient(135deg, #667eea 0%, #764ba2 100%)')">深邃紫</button>
+            <button class="bg-btn" style="background:linear-gradient(to right, #243b55, #141e30)" onclick="setPanelBg('linear-gradient(to right, #243b55, #141e30)', 'white')">午夜藍</button>
+            <button class="bg-btn" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%)" onclick="setPanelBg('linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 'white')">深邃紫</button>
         </div>
     </div>
 
@@ -137,15 +158,15 @@
 </div>
 
 <script>
-    // --- 關鍵配置 ---
+    // --- 核心配置 ---
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbwN2TyQCQSZ8X8oTMzOPLoSv4upcRO5TuI3Fogve-nygWoWh5iX1ZrLslhMDgnwrzkWGw/exec'; 
 
-    var currentUser = { id: '', pw: '' };
-    var isRegisterMode = false;
-    var activePanelId = '';
+    let currentUser = { id: '', pw: '' };
+    let isRegisterMode = false;
+    let activePanelId = '';
 
-    // --- 1. 登入邏輯 (強制全域掛載) ---
-    window.toggleAuthMode = function() {
+    // --- 1. 登入邏輯 ---
+    function toggleAuthMode() {
         isRegisterMode = !isRegisterMode;
         document.getElementById('auth-title').innerText = isRegisterMode ? "設定新帳號" : "登入儀表板";
         document.getElementById('user-id').style.display = isRegisterMode ? "none" : "block";
@@ -153,24 +174,24 @@
             '<p style="font-size:14px; color:#e67e22; margin-bottom:5px;">請設定 4 位數字密碼</p><input type="password" id="user-pw" placeholder="4 位數字密碼" maxlength="4">' :
             '<input type="text" id="user-id" placeholder="帳號 (流水號 0001)"><input type="password" id="user-pw" placeholder="密碼">';
         document.getElementById('auth-toggle').innerText = isRegisterMode ? "已有帳號？返回登入" : "第一次登入請按此 (設定密碼)";
-    };
+    }
 
-    window.handleAuth = async function() {
-        var idIn = document.getElementById('user-id');
-        var pwIn = document.getElementById('user-pw');
-        var idVal = idIn ? idIn.value : "";
-        var pwVal = pwIn ? pwIn.value : "";
+    async function handleAuth() {
+        const idIn = document.getElementById('user-id');
+        const pwIn = document.getElementById('user-pw');
+        const idVal = idIn ? idIn.value : "";
+        const pwVal = pwIn ? pwIn.value : "";
 
         if (isRegisterMode && !/^\d{4}$/.test(pwVal)) { alert("密碼必須是 4 位數字！"); return; }
         if (!isRegisterMode && !idVal) { alert("請輸入帳號"); return; }
         if (!pwVal) { alert("請輸入密碼"); return; }
 
-        var btn = event.target;
+        const btn = event.target;
         btn.disabled = true; btn.innerText = "連線中...";
 
         try {
-            var res = await fetch(GAS_URL, { method: 'POST', mode: 'cors', body: JSON.stringify({ action: isRegisterMode ? "register" : "login", userID: idVal, password: pwVal }) });
-            var result = await res.json();
+            const res = await fetch(GAS_URL, { method: 'POST', mode: 'cors', body: JSON.stringify({ action: isRegisterMode ? "register" : "login", userID: idVal, password: pwVal }) });
+            const result = await res.json();
             if (result.success) {
                 alert(result.message);
                 currentUser.id = (result.userID || idVal).toString().padStart(4, '0');
@@ -181,24 +202,25 @@
             } else { alert(result.message); }
         } catch (e) { alert("連線失敗，請檢查 URL 設定。"); }
         finally { btn.disabled = false; btn.innerText = "進入系統"; }
-    };
+    }
 
-    window.handleGuestLogin = function() {
+    function handleGuestLogin() {
         currentUser.id = "訪客"; currentUser.pw = "";
         document.getElementById('display-id').innerText = "訪客 (無存檔功能)";
         document.getElementById('login-overlay').style.display = 'none';
-    };
+    }
 
-    window.logout = function() {
+    function logout() {
         alert("您的帳號是 " + currentUser.id + "，已登出");
         location.reload();
-    };
+    }
 
-    // --- 2. 存取邏輯 ---
-    window.saveData = async function() {
+    // --- 2. 存取邏輯 (含長度限制與 Loading) ---
+    async function saveData() {
         if (!currentUser.id) return;
         if (currentUser.id === "訪客") { alert("訪客帳號無存檔功能！"); return; }
-        var data = {
+
+        const data = {
             title: document.getElementById('db-title').innerText,
             leftBg: document.getElementById('left-panel').style.background,
             rightBg: document.getElementById('right-panel').style.background,
@@ -206,23 +228,54 @@
             colWidths: [document.getElementById('th-1').style.width, document.getElementById('th-2').style.width, document.getElementById('th-3').style.width, document.getElementById('th-4').style.width],
             table: [], widgets: []
         };
-        document.querySelectorAll('#exam-tbody tr').forEach(function(row) {
+        document.querySelectorAll('#exam-tbody tr').forEach(row => {
             data.table.push({ subject: row.cells[0].innerText, time: row.cells[1].innerText, bold: row.style.fontWeight === 'bold', color: row.style.color });
         });
-        document.querySelectorAll('.widget').forEach(function(w) {
-            var type = w.classList.contains('widget-digital') ? 'digital' : (w.classList.contains('widget-analog') ? 'analog' : (w.classList.contains('widget-announce') ? 'announce' : 'note'));
-            var txt = w.querySelector('textarea');
+        document.querySelectorAll('.widget').forEach(w => {
+            let type = w.classList.contains('widget-digital') ? 'digital' : (w.classList.contains('widget-analog') ? 'analog' : (w.classList.contains('widget-announce') ? 'announce' : 'note'));
+            const txt = w.querySelector('textarea');
             data.widgets.push({ 
-                type: type, top: w.style.top, left: w.style.left, width: w.style.width, height: w.style.height, 
+                type, top: w.style.top, left: w.style.left, width: w.style.width, height: w.style.height, 
                 content: txt ? txt.value : '', extra: w.querySelector('input') ? w.querySelector('input').value : '',
                 fontSize: txt ? txt.style.fontSize : '16px', hacker: w.classList.contains('style-hacker')
             });
         });
+
+        // 1. JSON 長度檢查
+        const jsonString = JSON.stringify(data);
+        if (jsonString.length > 20000) {
+            alert("⚠️ 存檔失敗：您的設定內容過多（超過 20,000 字元），請刪除不必要的科目或工具後再試一次。");
+            return;
+        }
+
+        // 2. 顯示 Loading
+        const loadingOverlay = document.getElementById('save-loading');
+        loadingOverlay.style.display = 'flex';
+
+        // 3. 超時處理 (15秒)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+
         try {
-            var res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "save", userID: currentUser.id, password: currentUser.pw, dashboardData: JSON.stringify(data) }) });
-            var result = await res.json(); alert(result.message);
-        } catch (e) { alert("儲存失敗"); }
-    };
+            const res = await fetch(GAS_URL, { 
+                method: 'POST', 
+                mode: 'cors', 
+                signal: controller.signal,
+                body: JSON.stringify({ action: "save", userID: currentUser.id, password: currentUser.pw, dashboardData: jsonString }) 
+            });
+            clearTimeout(timeoutId);
+            const result = await res.json();
+            alert(result.message);
+        } catch (e) {
+            if (e.name === 'AbortError') {
+                alert("❌ 網路存取超時，存檔可能未完全成功，請再試一次。");
+            } else {
+                alert("❌ 網路繁忙或系統錯誤，存檔失敗，請稍後再試。");
+            }
+        } finally {
+            loadingOverlay.style.display = 'none';
+        }
+    }
 
     function loadDashboard(data) {
         if (!data) return;
@@ -230,111 +283,113 @@
         document.getElementById('left-panel').style.background = data.leftBg || "";
         document.getElementById('right-panel').style.background = data.rightBg || "";
         document.getElementById('exam-table').style.fontSize = data.tableFontSize || "16px";
-        if (data.colWidths) data.colWidths.forEach(function(w, i) { if(w) document.getElementById('th-' + (i+1)).style.width = w; });
+        if (data.colWidths) data.colWidths.forEach((w, i) => { if(w) document.getElementById('th-' + (i+1)).style.width = w; });
         document.getElementById('exam-tbody').innerHTML = "";
-        if(data.table) data.table.forEach(function(item) { addTableRow(item); });
-        if(data.widgets) data.widgets.forEach(function(w) { createWidget(w.type, w, w.hacker ? 'hacker' : 'default'); });
+        if(data.table) data.table.forEach(item => addTableRow(item));
+        if(data.widgets) data.widgets.forEach(w => createWidget(w.type, w, w.hacker ? 'hacker' : 'default'));
     }
 
-    // --- 3. UI 與表格 ---
-    window.addTableRow = function(data) {
-        var tr = document.createElement('tr');
+    // --- 3. UI 與表格控制 ---
+    function addTableRow(data = null) {
+        const tr = document.createElement('tr');
         if(data && data.bold) tr.style.fontWeight = 'bold';
         if(data && data.color) tr.style.color = data.color;
-        tr.innerHTML = '<td>' + (data ? data.subject : '新科目') + '</td><td contenteditable="true">' + (data ? data.time : '08:00-09:00') + '</td><td><div class="energy-bar"><div class="energy-fill"></div></div></td><td><div class="mgmt-cell"><button class="btn-sm" onclick="toggleRowBold(this)">B</button><input type="color" value="' + (data?.color || '#000000') + '" onchange="this.closest(\'tr\').style.color=this.value" style="width:20px;height:20px;border:none;background:none;cursor:pointer;"><button class="btn-sm" style="color:red" onclick="this.closest(\'tr\').remove()">✖</button></div></td>';
-        // 修正：將科目欄改為 contenteditable
-        tr.cells[0].contentEditable = "true";
+        tr.innerHTML = '<td contenteditable="true">' + (data ? data.subject : '新科目') + '</td>' +
+            '<td contenteditable="true">' + (data ? data.time : '08:00-09:00') + '</td>' +
+            '<td><div class="energy-bar"><div class="energy-fill"></div></div></td>' +
+            '<td><div class="mgmt-cell"><button class="btn-sm" onclick="toggleRowBold(this)">B</button>' +
+            '<input type="color" value="' + (data?.color || '#000000') + '" onchange="this.closest(\'tr\').style.color=this.value" style="width:20px;height:20px;border:none;background:none;cursor:pointer;">' +
+            '<button class="btn-sm" style="color:red" onclick="this.closest(\'tr\').remove()">✖</button></div></td>';
         document.getElementById('exam-tbody').appendChild(tr);
-    };
-    window.toggleRowBold = function(btn) { var r = btn.closest('tr'); r.style.fontWeight = (r.style.fontWeight === 'bold' ? 'normal' : 'bold'); };
-    window.changeFontSize = function(d) { var t = document.getElementById('exam-table'); var s = parseInt(window.getComputedStyle(t).fontSize) || 16; t.style.fontSize = (s + d) + 'px'; };
-    window.openBgMenu = function(p, e) { activePanelId = p + '-panel'; var m = document.getElementById('bg-selector'); m.style.display = 'block'; m.style.left = e.pageX + 'px'; m.style.top = e.pageY + 'px'; e.stopPropagation(); };
-    window.setPanelBg = function(s) { document.getElementById(activePanelId).style.background = s; document.getElementById('bg-selector').style.display = 'none'; };
+    }
+    function toggleRowBold(btn) { const r = btn.closest('tr'); r.style.fontWeight = (r.style.fontWeight === 'bold' ? 'normal' : 'bold'); }
+    function changeFontSize(d) { const t = document.getElementById('exam-table'); let s = parseInt(window.getComputedStyle(t).fontSize) || 16; t.style.fontSize = (s + d) + 'px'; }
+    function openBgMenu(p, e) { activePanelId = p + '-panel'; const m = document.getElementById('bg-selector'); m.style.display = 'block'; m.style.left = e.pageX + 'px'; m.style.top = e.pageY + 'px'; e.stopPropagation(); }
+    function setPanelBg(s) { document.getElementById(activePanelId).style.background = s; document.getElementById('bg-selector').style.display = 'none'; }
 
     // --- 4. 小工具核心 ---
-    window.createWidget = function(type, data, styleType) {
-        var board = document.getElementById('right-panel');
-        var w = document.createElement('div');
+    function createWidget(type, data = null, styleType = 'default') {
+        const board = document.getElementById('right-panel');
+        const w = document.createElement('div');
         w.className = 'widget widget-' + type;
         if (styleType === 'hacker') w.classList.add('style-hacker');
         w.style.top = data?.top || '100px'; w.style.left = data?.left || '100px';
         w.style.width = data?.width || (type === 'digital' ? '250px' : '220px');
         w.style.height = data?.height || (type === 'digital' ? '120px' : '220px');
 
-        var html = '<div class="widget-handle"></div><div class="widget-ctrl">';
+        let html = '<div class="widget-handle"></div><div class="widget-ctrl">';
         if (type === 'announce') { html += '<button class="btn-widget" onclick="zoomText(this, 2)">A+</button><button class="btn-widget" onclick="zoomText(this, -2)">A-</button>'; }
         html += '<button class="btn-close" onclick="this.closest(\'.widget\').remove()">×</button></div>';
 
         if (type === 'digital') {
             html += '<div class="clock-digit">00:00:00</div>';
-            new ResizeObserver(function(entries) { for(var entry of entries) { var digit = entry.target.querySelector('.clock-digit'); if(digit) digit.style.fontSize = (entry.target.offsetWidth / 5) + 'px'; } }).observe(w);
+            new ResizeObserver(function(entries) { for(let entry of entries) { const digit = entry.target.querySelector('.clock-digit'); if(digit) digit.style.fontSize = (entry.target.offsetWidth / 5) + 'px'; } }).observe(w);
         } else if (type === 'analog') {
-            var svg = '<svg viewBox="0 0 100 100" style="width:95%; height:95%"><circle cx="50" cy="50" r="48" fill="white" stroke="#333" stroke-width="2"/>';
-            for(var i=1; i<=12; i++) {
-                var a = (i * 30) * (Math.PI / 180);
+            let svg = '<svg viewBox="0 0 100 100" style="width:95%; height:95%"><circle cx="50" cy="50" r="48" fill="white" stroke="#333" stroke-width="2"/>';
+            for(let i=1; i<=12; i++) {
+                let a = (i * 30) * (Math.PI / 180);
                 svg += '<text x="' + (50+38*Math.sin(a)) + '" y="' + (50-38*Math.cos(a)) + '" style="font-size:8px;font-weight:bold;fill:#333;text-anchor:middle;dominant-baseline:middle;">'+i+'</text>';
                 svg += '<line x1="'+(50+44*Math.sin(a))+'" y1="'+(50-44*Math.cos(a))+'" x2="'+(50+48*Math.sin(a))+'" y2="'+(50-48*Math.cos(a))+'" stroke="#333" stroke-width="2"/>';
             }
             svg += '<line x1="50" y1="50" x2="50" y2="25" class="hand hour" stroke="#333" stroke-width="4"/><line x1="50" y1="50" x2="50" y2="15" class="hand min" stroke="#666" stroke-width="3"/><line x1="50" y1="50" x2="50" y2="10" class="hand sec" stroke="red" stroke-width="1"/><circle cx="50" cy="50" r="2" fill="#333"/></svg>';
             html += svg;
         } else if (type === 'note' || type === 'announce') {
-            var fs = data?.fontSize || '16px';
+            const fs = data?.fontSize || '16px';
             html += (type === 'announce' ? '<input value="'+(data?.extra || '今日公告')+'" style="font-weight:bold; color:#e74c3c">' : '') +
                     '<textarea style="height:80%; font-size:'+fs+'">'+(data?.content || '')+'</textarea>';
         }
         w.innerHTML = html; board.appendChild(w); makeDraggable(w);
-    };
+    }
 
-    window.zoomText = function(btn, d) { var txt = btn.closest('.widget').querySelector('textarea'); var s = parseInt(window.getComputedStyle(txt).fontSize) || 16; txt.style.fontSize = (s + d) + 'px'; };
+    function zoomText(btn, d) { const txt = btn.closest('.widget').querySelector('textarea'); let s = parseInt(window.getComputedStyle(txt).fontSize) || 16; txt.style.fontSize = (s + d) + 'px'; }
 
     function makeDraggable(el) {
-        var h = el.querySelector('.widget-handle');
+        const h = el.querySelector('.widget-handle');
         h.addEventListener('mousedown', function(e) {
-            var ox = e.clientX - el.offsetLeft, oy = e.clientY - el.offsetTop;
-            document.querySelectorAll('.widget').forEach(function(w) { w.style.zIndex = 10; }); el.style.zIndex = 100;
-            var move = function(ev) { el.style.left = (ev.clientX - ox) + 'px'; el.style.top = (ev.clientY - oy) + 'px'; };
-            var stop = function() { document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', stop); };
+            let ox = e.clientX - el.offsetLeft, oy = e.clientY - el.offsetTop;
+            document.querySelectorAll('.widget').forEach(w => w.style.zIndex = 10); el.style.zIndex = 100;
+            const move = function(e) { el.style.left = (e.clientX - ox) + 'px'; el.style.top = (e.clientY - oy) + 'px'; };
+            const stop = function() { document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', stop); };
             document.addEventListener('mousemove', move); document.addEventListener('mouseup', stop);
         });
     }
 
-    // --- 5. 循環更新與調寬 ---
+    // --- 5. 循環更新與初始化 ---
     function initResizableTable() {
-        document.querySelectorAll('th').forEach(function(th) {
-            var resizer = document.createElement('div'); resizer.className = 'resizer'; th.appendChild(resizer);
+        document.querySelectorAll('th').forEach(th => {
+            const resizer = document.createElement('div'); resizer.className = 'resizer'; th.appendChild(resizer);
             resizer.addEventListener('mousedown', function(e) {
-                var startX = e.pageX, startW = th.offsetWidth;
-                var mm = function(ev) { th.style.width = (startW + (ev.pageX - startX)) + 'px'; };
-                var mu = function() { document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); };
+                const startX = e.pageX, startW = th.offsetWidth;
+                const mm = function(ev) { th.style.width = (startW + (ev.pageX - startX)) + 'px'; };
+                const mu = function() { document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); };
                 document.addEventListener('mousemove', mm); document.addEventListener('mouseup', mu);
             });
         });
     }
 
-    setInterval(function() {
-        var now = new Date();
-        document.querySelectorAll('.clock-digit').forEach(function(c) { c.innerText = now.toTimeString().split(' ')[0]; });
-        document.querySelectorAll('.widget-analog').forEach(function(clock) {
-            var h = now.getHours() % 12, m = now.getMinutes(), s = now.getSeconds();
+    setInterval(() => {
+        const now = new Date();
+        document.querySelectorAll('.clock-digit').forEach(c => c.innerText = now.toTimeString().split(' ')[0]);
+        document.querySelectorAll('.widget-analog').forEach(clock => {
+            const h = now.getHours() % 12, m = now.getMinutes(), s = now.getSeconds();
             clock.querySelector('.hour').style.transform = 'rotate(' + ((h*30)+(m/2)) + 'deg)';
             clock.querySelector('.min').style.transform = 'rotate(' + (m*6) + 'deg)';
             clock.querySelector('.sec').style.transform = 'rotate(' + (s*6) + 'deg)';
         });
-        document.querySelectorAll('#exam-tbody tr').forEach(function(row) {
+        document.querySelectorAll('#exam-tbody tr').forEach(row => {
             try {
-                var times = row.cells[1].innerText.split('-');
-                var sArr = times[0].split(':'), eArr = times[1].split(':');
-                var st = new Date(), et = new Date(); st.setHours(sArr[0], sArr[1], 0); et.setHours(eArr[0], eArr[1], 0);
-                var p = 100; if (now > et) p = 0; else if (now > st) p = ((et - now) / (et - st)) * 100;
-                var fill = row.querySelector('.energy-fill');
+                const times = row.cells[1].innerText.split('-');
+                const sArr = times[0].split(':'), eArr = times[1].split(':');
+                const st = new Date(), et = new Date(); st.setHours(sArr[0], sArr[1], 0); et.setHours(eArr[0], eArr[1], 0);
+                let p = 100; if (now > et) p = 0; else if (now > st) p = ((et - now) / (et - st)) * 100;
+                const fill = row.querySelector('.energy-fill');
                 if(fill) { fill.style.width = p + '%'; fill.style.backgroundColor = p > 50 ? '#4caf50' : (p > 20 ? '#ffeb3b' : '#f44336'); }
             } catch(e) {}
         });
     }, 1000);
 
-    window.onclick = function() { var m = document.getElementById('bg-selector'); if(m) m.style.display='none'; };
+    window.onclick = function() { const m = document.getElementById('bg-selector'); if(m) m.style.display='none'; };
     initResizableTable();
-    console.log("系統：腳本載入完成！");
 </script>
 </body>
 </html>
