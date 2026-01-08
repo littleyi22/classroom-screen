@@ -170,51 +170,36 @@
     let activePanelId = '';
     let isLocked = false;
 
-    // --- 1. 登入系統 ---
-    function toggleAuthMode() {
-        isRegisterMode = !isRegisterMode;
-        document.getElementById('auth-title').innerText = isRegisterMode ? "設定新帳號" : "登入儀表板";
-        document.getElementById('user-id').style.display = isRegisterMode ? "none" : "block";
-        document.getElementById('input-area').innerHTML = isRegisterMode ? 
-            '<p style="font-size:14px; color:#e67e22; margin-bottom:5px;">請設定 4 位數字密碼</p><input type="password" id="user-pw" placeholder="4 位數字密碼" maxlength="4">' :
-            '<input type="text" id="user-id" placeholder="帳號 (流水號 0001)"><input type="password" id="user-pw" placeholder="密碼">';
-        document.getElementById('auth-toggle').innerText = isRegisterMode ? "已有帳號？返回登入" : "第一次登入請按此 (設定密碼)";
-    }
+// --- 1. 登入與註冊介面切換 ---
+function toggleAuthMode() {
+    isRegisterMode = !isRegisterMode;
+    const authTitle = document.getElementById('auth-title');
+    const inputArea = document.getElementById('input-area');
+    const authBtn = document.querySelector('button[onclick="handleAuth()"]');
+    const authToggle = document.getElementById('auth-toggle');
 
-    async function handleAuth() {
-        const idIn = document.getElementById('user-id');
-        const pwIn = document.getElementById('user-pw');
-        const idVal = idIn ? idIn.value : "";
-        const pwVal = pwIn ? pwIn.value : "";
-        if (isRegisterMode && !/^\d{4}$/.test(pwVal)) { alert("密碼必須是 4 位數字！"); return; }
-        if (!isRegisterMode && !idVal) { alert("請輸入帳號"); return; }
+    if (isRegisterMode) {
+        // 修改這裡的大標題
+        authTitle.innerText = "設定新密碼"; 
+        // 修改這裡的次標題提示文字
+        inputArea.innerHTML = 
+            '<p style="font-size:15px; color:#e67e22; margin-bottom:10px; font-weight:bold;">' +
+            '系統會配發 4 個數字的帳號給你' +
+            '</p>' +
+            '<input type="password" id="user-pw" placeholder="請設定 4 位數字密碼" maxlength="4">';
         
-        const btn = event.target; btn.disabled = true; btn.innerText = "連線中...";
-        try {
-            const res = await fetch(GAS_URL, { method: 'POST', mode: 'cors', body: JSON.stringify({ action: isRegisterMode ? "register" : "login", userID: idVal, password: pwVal }) });
-            const result = await res.json();
-            if (result.success) {
-                alert(result.message);
-                currentUser.id = (result.userID || idVal).toString().padStart(4, '0');
-                currentUser.pw = pwVal;
-                document.getElementById('display-id').innerText = currentUser.id;
-                document.getElementById('login-overlay').style.display = 'none';
-                if (result.dashboardData) loadDashboard(JSON.parse(result.dashboardData));
-            } else { alert(result.message); }
-        } catch (e) { alert("連線失敗，請檢查 URL 設定。"); }
-        finally { btn.disabled = false; btn.innerText = "進入系統"; }
+        authBtn.innerText = "獲取帳號並登入";
+        authToggle.innerText = "已有帳號？返回登入";
+    } else {
+        authTitle.innerText = "登入儀表板";
+        inputArea.innerHTML = 
+            '<input type="text" id="user-id" placeholder="帳號 (流水號 0001)">' +
+            '<input type="password" id="user-pw" placeholder="密碼">';
+        
+        authBtn.innerText = "進入系統";
+        authToggle.innerText = "第一次登入請按此 (設定密碼)";
     }
-
-    function handleGuestLogin() {
-        currentUser.id = "訪客"; currentUser.pw = "";
-        document.getElementById('display-id').innerText = "訪客 (無存檔功能)";
-        document.getElementById('login-overlay').style.display = 'none';
-    }
-
-    function logout() {
-        alert("您的帳號是 " + currentUser.id + "，已登出");
-        location.reload();
-    }
+}
 
     // --- 2. 介面鎖定功能 ---
     function toggleLock() {
