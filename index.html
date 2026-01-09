@@ -29,7 +29,7 @@
         .sidebar-fixed { background: var(--sidebar-bg); border-right: 2px solid #ddd; color: var(--text-color); }
         .main-board { background: var(--main-bg); overflow: hidden; }
 
-        /* --- 2. 介面遮罩與動畫 --- */
+        /* --- 2. 登入介面 --- */
         #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 9999; display: flex; justify-content: center; align-items: center; color: white; }
         #save-loading { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; flex-direction: column; justify-content: center; align-items: center; color: white; }
         .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #27ae60; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px; }
@@ -38,9 +38,12 @@
         .login-box { background: #fff; color: #333; padding: 40px; border-radius: 12px; width: 400px; text-align: center; }
         .login-box h2 { margin-bottom: 10px; color: #2c3e50; }
         .login-box input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; }
+        
+        /* 登入按鈕群 */
         .btn-primary { background: #3498db; color: white; border: none; padding: 12px; border-radius: 6px; width: 100%; cursor: pointer; font-size: 16px; font-weight: bold; margin-bottom: 8px; }
-        .btn-guest { background: #95a5a6; color: white; border: none; padding: 12px; border-radius: 6px; width: 100%; cursor: pointer; font-size: 14px; }
-        .login-box .link { color: #3498db; cursor: pointer; font-size: 14px; margin-top: 15px; display: block; }
+        .btn-guest { background: #95a5a6; color: white; border: none; padding: 12px; border-radius: 6px; width: 100%; cursor: pointer; font-size: 14px; margin-bottom: 8px; }
+        .btn-reg-mode { background: #ecf0f1; color: #2c3e50; border: 1px solid #bdc3c7; padding: 10px; border-radius: 6px; width: 100%; cursor: pointer; font-size: 14px; font-weight: bold; }
+        .btn-reg-mode:hover { background: #dfe6e9; }
 
         /* --- 3. 工具列與表格 --- */
         .toolbar { background: rgba(255,255,255,0.85); padding: 8px; border-radius: 8px; margin-bottom: 15px; display: flex; gap: 5px; flex-wrap: wrap; align-items: center; color: #333 !important; }
@@ -52,18 +55,17 @@
         .title-area { display: flex; align-items: center; gap: 8px; }
         .title-ctrl { display: flex; gap: 3px; }
 
+        /* 頂部帳號顯示 */
+        .top-account-info { margin-left: auto; font-size: 12px; font-weight: bold; opacity: 0.8; padding-right: 5px; }
+
         .exam-table { width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.2); table-layout: fixed; color: inherit; }
         .exam-table th, .exam-table td { border: 1px solid rgba(150,150,150,0.5); padding: 6px; text-align: center; overflow-wrap: anywhere; vertical-align: middle; position: relative; }
         .exam-table td:nth-child(1) { text-align: left; padding-left: 8px; }
         
         .resizer { position: absolute; right: 0; top: 0; width: 6px; cursor: col-resize; height: 100%; z-index: 5; }
-        .resizer:hover { background: #3498db; }
-
         .energy-bar { width: 100%; height: 14px; background: rgba(0,0,0,0.1); border-radius: 7px; overflow: hidden; }
-        .energy-fill { width: 100%; height: 100%; background: #4caf50; transition: width 1s, background-color 0.5s; }
-        .mgmt-cell { display: flex; gap: 4px; align-items: center; justify-content: center; }
+        .energy-fill { width: 100%; height: 100%; background: #4caf50; transition: width 1s; }
         
-        /* A, B 圖示按鈕樣式 */
         .btn-sm { width: 26px; height: 26px; border: 1px solid #ddd; background: #fff; cursor: pointer; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: #333; position: relative; overflow: hidden; }
         .btn-sm input[type="color"] { position: absolute; top: -10px; left: -10px; width: 50px; height: 50px; cursor: pointer; opacity: 0; }
 
@@ -72,21 +74,15 @@
         .widget-handle { position: absolute; top: 0; left: 0; width: 100%; height: 35px; background: rgba(0,0,0,0.03); cursor: move; }
         .widget-ctrl { position: absolute; top: 6px; right: 8px; display: flex; gap: 4px; z-index: 30; }
         .btn-close { background: #ff5f56; color: white; border: none; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; cursor: pointer; }
-
         .clock-digit { font-family: monospace; font-weight: bold; text-align: center; pointer-events: none; width: 100%; }
-        .style-hacker { background: #000 !important; color: #00ff00 !important; text-shadow: 0 0 5px #00ff00; border: 2px solid #333; }
-        .hand { transform-origin: 50% 50%; stroke-linecap: round; transition: transform 0.5s; }
-        
-        .widget-note { background: #fff9c4; }
-        .widget-announce { border-left: 8px solid #e74c3c; }
+        .style-hacker { background: #000 !important; color: #00ff00 !important; border: 2px solid #333; }
         .widget textarea { width: 100%; border: none; background: transparent; outline: none; resize: none; font-family: inherit; font-size: 16px; color: inherit; }
 
         /* 鎖定樣式 */
         .locked .resizer, .locked .widget-ctrl, .locked .widget-handle, .locked .mgmt-cell button, .locked .mgmt-cell label, .locked .title-ctrl { display: none !important; }
         .locked .widget { resize: none !important; }
 
-        /* 背景選單 */
-        .bg-menu { display: none; position: absolute; background: white; border: 1px solid #ccc; padding: 15px; border-radius: 10px; z-index: 2000; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 260px; }
+        .bg-menu { display: none; position: absolute; background: white; border: 1px solid #ccc; padding: 15px; border-radius: 10px; z-index: 2000; width: 260px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .bg-option-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
         .bg-btn { width: 100%; height: 40px; border: 1px solid #ddd; cursor: pointer; border-radius: 6px; font-size: 10px; font-weight: bold; }
 
@@ -109,9 +105,9 @@
             <input type="text" id="user-id" placeholder="帳號 (流水號 0001)">
             <input type="password" id="user-pw" placeholder="密碼">
         </div>
-        <button type="button" class="btn-primary" onclick="window.handleAuth()">進入系統</button>
-        <button type="button" class="btn-guest" onclick="window.handleGuestLogin()">訪客登入</button>
-        <span class="link" onclick="window.toggleAuthMode()" id="auth-toggle">第一次登入請按此 (設定密碼)</span>
+        <button type="button" class="btn-primary" id="auth-main-btn" onclick="window.handleAuth()">進入系統</button>
+        <button type="button" class="btn-guest" id="guest-btn" onclick="window.handleGuestLogin()">訪客登入</button>
+        <button type="button" class="btn-reg-mode" id="auth-toggle-btn" onclick="window.toggleAuthMode()">註冊</button>
     </div>
 </div>
 
@@ -131,16 +127,13 @@
             <button class="btn" onclick="window.openBgMenu('left', event)">🎨背景</button>
             <button class="btn btn-lock" id="btn-lock" onclick="window.toggleLock()">🔓 解鎖中</button>
             <button class="btn btn-save" onclick="window.saveData()">💾存檔</button>
+            <!-- 登出按鈕旁新增帳號顯示 -->
+            <span class="top-account-info" id="top-display-id">ID: ----</span>
             <button class="btn" onclick="window.logout()">登出</button>
         </div>
         <table class="exam-table" id="exam-table">
             <thead>
-                <tr>
-                    <th id="th-1" style="width:25%">科目</th>
-                    <th id="th-2" style="width:20%">時間</th>
-                    <th id="th-3" style="width:25%">能量條</th>
-                    <th id="th-4" style="width:30%">管理</th>
-                </tr>
+                <tr><th id="th-1" style="width:25%">科目</th><th id="th-2" style="width:20%">時間</th><th id="th-3" style="width:25%">能量條</th><th id="th-4" style="width:30%">管理</th></tr>
             </thead>
             <tbody id="exam-tbody"></tbody>
         </table>
@@ -149,11 +142,11 @@
     <main class="panel main-board" id="right-panel">
         <div class="toolbar">
             <button class="btn" onclick="window.createWidget('digital', null, 'default')">+數位(白)</button>
-            <button class="btn" onclick="window.createWidget('digital', null, 'hacker')">+數位(黑綠)</button>
-            <button class="btn" onclick="window.createWidget('analog')">+指針時鐘</button>
-            <button class="btn" onclick="window.createWidget('note')">+便利貼</button>
-            <button class="btn" onclick="window.createWidget('announce')">+公告欄</button>
-            <button class="btn" onclick="window.openBgMenu('right', event)">🎨背景</button>
+            <button class="btn" onclick="createWidget('digital', null, 'hacker')">+數位(黑綠)</button>
+            <button class="btn" onclick="createWidget('analog')">+指針時鐘</button>
+            <button class="btn" onclick="createWidget('note')">+便利貼</button>
+            <button class="btn" onclick="createWidget('announce')">+公告欄</button>
+            <button class="btn" onclick="openBgMenu('right', event)">🎨背景</button>
         </div>
     </main>
 
@@ -178,8 +171,7 @@
 </div>
 
 <script>
-    // --- 配置 ---
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbwN2TyQCQSZ8X8oTMzOPLoSv4upcRO5TuI3Fogve-nygWoWh5iX1ZrLslhMDgnwrzkWGw/exec'; 
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbwN2TyQCQSZ8X8oTMzOPLoSv4upcRO5TuI3Fogve-nygWoWh5iX1ZrLslhMDgnwrzkWGw/exec';
 
     var currentUser = { id: '', pw: '' };
     var isRegisterMode = false;
@@ -191,18 +183,24 @@
         isRegisterMode = !isRegisterMode;
         var authTitle = document.getElementById('auth-title');
         var inputArea = document.getElementById('input-area');
-        var authToggle = document.getElementById('auth-toggle');
+        var mainBtn = document.getElementById('auth-main-btn');
+        var guestBtn = document.getElementById('guest-btn');
+        var toggleBtn = document.getElementById('auth-toggle-btn');
 
         if (isRegisterMode) {
             authTitle.innerText = "設定新密碼";
             inputArea.innerHTML = '<p style="font-size:15px; color:#e67e22; margin-bottom:10px; font-weight:bold;">系統會配發 4 個數字的帳號給你</p>' +
                                 '<input type="password" id="user-pw" placeholder="請設定 4 位數字密碼 (如 0523)" maxlength="4">';
-            authToggle.innerText = "已有帳號？返回登入";
+            mainBtn.innerText = "獲取帳號並登入";
+            guestBtn.style.display = "none";
+            toggleBtn.innerText = "返回登入";
         } else {
             authTitle.innerText = "登入儀表板";
             inputArea.innerHTML = '<input type="text" id="user-id" placeholder="帳號 (流水號 0001)">' +
                                 '<input type="password" id="user-pw" placeholder="密碼">';
-            authToggle.innerText = "第一次登入請按此 (設定密碼)";
+            mainBtn.innerText = "進入系統";
+            guestBtn.style.display = "block";
+            toggleBtn.innerText = "註冊";
         }
     };
 
@@ -215,9 +213,8 @@
 
         if (isRegisterMode && !/^\d{4}$/.test(pwVal)) { alert("密碼請設定為 4 位數字！"); return; }
         if (!isRegisterMode && !idVal) { alert("請輸入帳號"); return; }
-        if (!rawPw) { alert("請輸入密碼"); return; }
-
-        var btn = document.querySelector('.btn-primary');
+        
+        var btn = document.getElementById('auth-main-btn');
         btn.disabled = true; btn.innerText = "連線中...";
 
         try {
@@ -228,16 +225,18 @@
                 currentUser.id = (result.userID || idVal).toString().padStart(4, '0');
                 currentUser.pw = pwVal;
                 document.getElementById('display-id').innerText = currentUser.id;
+                document.getElementById('top-display-id').innerText = "ID: " + currentUser.id; // 更新頂部顯示
                 document.getElementById('login-overlay').style.display = 'none';
                 if (result.dashboardData) window.loadDashboard(JSON.parse(result.dashboardData));
             } else { alert(result.message); }
         } catch (e) { alert("連線失敗，請檢查 URL 設定。"); }
-        finally { btn.disabled = false; btn.innerText = isRegisterMode ? "獲取帳號並登入" : "進入系統"; }
+        finally { btn.disabled = false; btn.innerText = isRegisterMode ? "獲取帳號" : "進入系統"; }
     };
 
     window.handleGuestLogin = function() {
         currentUser.id = "訪客"; currentUser.pw = "";
         document.getElementById('display-id').innerText = "訪客 (無存檔功能)";
+        document.getElementById('top-display-id').innerText = "訪客";
         document.getElementById('login-overlay').style.display = 'none';
     };
 
@@ -251,13 +250,9 @@
         if (!currentUser.id || currentUser.id === "訪客") { alert("訪客無法存檔！"); return; }
         var titleEl = document.getElementById('db-title');
         var data = {
-            title: titleEl.innerText,
-            titleBold: titleEl.style.fontWeight === 'bold',
-            titleColor: titleEl.style.color,
-            leftBg: document.getElementById('left-panel').style.background,
-            rightBg: document.getElementById('right-panel').style.background,
-            panelTextColor: document.getElementById('left-panel').style.color,
-            tableFontSize: document.getElementById('exam-table').style.fontSize,
+            title: titleEl.innerText, titleBold: titleEl.style.fontWeight === 'bold', titleColor: titleEl.style.color,
+            leftBg: document.getElementById('left-panel').style.background, rightBg: document.getElementById('right-panel').style.background,
+            panelTextColor: document.getElementById('left-panel').style.color, tableFontSize: document.getElementById('exam-table').style.fontSize,
             isLocked: isLocked,
             colWidths: [document.getElementById('th-1').style.width, document.getElementById('th-2').style.width, document.getElementById('th-3').style.width, document.getElementById('th-4').style.width],
             table: [], widgets: []
@@ -275,13 +270,12 @@
             });
         });
 
-        var jsonStr = JSON.stringify(data);
-        if (jsonStr.length > 20000) { alert("存檔失敗：內容過長。"); return; }
+        if (JSON.stringify(data).length > 20000) { alert("內容過長限制。"); return; }
         document.getElementById('save-loading').style.display = 'flex';
         try {
-            var res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "save", userID: currentUser.id, password: currentUser.pw, dashboardData: jsonStr }) });
+            var res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "save", userID: currentUser.id, password: currentUser.pw, dashboardData: JSON.stringify(data) }) });
             var resJ = await res.json(); alert(resJ.message);
-        } catch (e) { alert("❌ 存檔失敗，網路繁忙。"); }
+        } catch (e) { alert("❌ 存檔失敗。"); }
         finally { document.getElementById('save-loading').style.display = 'none'; }
     };
 
@@ -291,7 +285,6 @@
         titleEl.innerText = data.title || "本學期段考時程";
         titleEl.style.fontWeight = data.titleBold ? 'bold' : 'normal';
         titleEl.style.color = data.titleColor || 'inherit';
-
         document.getElementById('left-panel').style.background = data.leftBg || "";
         document.getElementById('right-panel').style.background = data.rightBg || "";
         document.getElementById('left-panel').style.color = data.panelTextColor || "inherit";
@@ -303,16 +296,9 @@
         if(data.isLocked) window.toggleLock(true);
     };
 
-    // --- 3. UI 功能 (標題、表格、鎖定) ---
-    window.toggleTitleBold = function() {
-        if(isLocked) return;
-        var el = document.getElementById('db-title');
-        el.style.fontWeight = (el.style.fontWeight === 'bold' ? 'normal' : 'bold');
-    };
-    window.changeTitleColor = function(c) {
-        if(isLocked) return;
-        document.getElementById('db-title').style.color = c;
-    };
+    // --- 3. UI 功能 ---
+    window.toggleTitleBold = function() { var el = document.getElementById('db-title'); el.style.fontWeight = (el.style.fontWeight === 'bold' ? 'normal' : 'bold'); };
+    window.changeTitleColor = function(c) { document.getElementById('db-title').style.color = c; };
 
     window.toggleLock = function(forceLock) {
         isLocked = (typeof forceLock === 'boolean') ? forceLock : !isLocked;
@@ -342,22 +328,18 @@
         var subCell = tr.cells[0]; subCell.contentEditable = "true";
         subCell.addEventListener('input', function() { if (this.innerText.length > 20) { this.innerText = this.innerText.substring(0, 20); alert("科目上限 20 字"); } });
         document.getElementById('exam-tbody').appendChild(tr);
-        if(isLocked) window.toggleLock(true);
     };
 
-    window.toggleRowBold = function(btn) { if(isLocked) return; var r = btn.closest('tr'); r.style.fontWeight = (r.style.fontWeight === 'bold' ? 'normal' : 'bold'); };
-    window.changeFontSize = function(d) { if(isLocked) return; var t = document.getElementById('exam-table'); var s = parseInt(window.getComputedStyle(t).fontSize) || 16; t.style.fontSize = (s + d) + 'px'; };
-    window.openBgMenu = function(p, e) { if(isLocked) return; activePanelId = p + '-panel'; var m = document.getElementById('bg-selector'); m.style.display = 'block'; m.style.left = e.pageX + 'px'; m.style.top = e.pageY + 'px'; e.stopPropagation(); };
-    
-    // 修改：設定背景同時設定對比文字顏色
+    window.toggleRowBold = function(btn) { var r = btn.closest('tr'); r.style.fontWeight = (r.style.fontWeight === 'bold' ? 'normal' : 'bold'); };
+    window.changeFontSize = function(d) { var t = document.getElementById('exam-table'); var s = parseInt(window.getComputedStyle(t).fontSize) || 16; t.style.fontSize = (s + d) + 'px'; };
+    window.openBgMenu = function(p, e) { activePanelId = p + '-panel'; var m = document.getElementById('bg-selector'); m.style.display = 'block'; m.style.left = e.pageX + 'px'; m.style.top = e.pageY + 'px'; e.stopPropagation(); };
     window.setPanelBg = function(s, textColor) { 
-        var p = document.getElementById(activePanelId); 
-        p.style.background = s; 
+        var p = document.getElementById(activePanelId); p.style.background = s; 
         if(textColor) p.style.color = textColor; 
         document.getElementById('bg-selector').style.display = 'none'; 
     };
 
-    // --- 4. 小工具核心 ---
+    // --- 4. 小工具 ---
     window.createWidget = function(type, data, styleType) {
         var board = document.getElementById('right-panel');
         var w = document.createElement('div');
@@ -386,12 +368,12 @@
             html += (type === 'announce' ? '<input value="'+(data?.extra || '今日公告')+'" style="font-weight:bold; color:#e74c3c" maxlength="20">' : '') +
                     '<textarea maxlength="200" style="height:80%; font-size:'+fs+'">'+(data?.content || '')+'</textarea>';
         }
-        w.innerHTML = html; board.appendChild(w); window.makeDraggable(w);
+        w.innerHTML = html; board.appendChild(w); makeDraggable(w);
     };
 
     window.zoomText = function(btn, d) { var txt = btn.closest('.widget').querySelector('textarea'); var s = parseInt(window.getComputedStyle(txt).fontSize) || 16; txt.style.fontSize = (s + d) + 'px'; };
 
-    window.makeDraggable = function(el) {
+    function makeDraggable(el) {
         var h = el.querySelector('.widget-handle');
         h.addEventListener('mousedown', function(e) {
             if (isLocked) return;
