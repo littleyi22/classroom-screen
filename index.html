@@ -180,6 +180,7 @@
                 </div>
             </div>
             <button class="btn" onclick="window.addTableRow()">+新增</button>
+			<button class="btn" onclick="toggleEnergy()">🔋開關能量條</button>
             <button class="btn" onclick="window.changeFontSize(2)">A+</button>
             <button class="btn" onclick="window.changeFontSize(-2)">A-</button>
             <button class="btn" onclick="window.openBgMenu('left', event)">🎨背景</button>
@@ -691,6 +692,21 @@ html += '<button class="btn-close" onclick="this.closest(\'.widget\').remove()">
 
     window.onclick = function() { var m = document.getElementById('bg-selector'); if(m) m.style.display='none'; };
     initResizableTable();
+	
+	// --- 超簡單：能量條開關 ---
+    window.toggleEnergy = function() {
+        // 抓出表格裡的第 3 欄 (包含標題列和資料列)
+        var cells = document.querySelectorAll('#exam-table th:nth-child(3), #exam-table td:nth-child(3)');
+        
+        cells.forEach(function(cell) {
+            // 如果目前是隱藏的，就顯示出來；如果是顯示的，就隱藏起來
+            if (cell.style.display === 'none') {
+                cell.style.display = '';
+            } else {
+                cell.style.display = 'none';
+            }
+        });
+    };
 </script>
 </body>
 </html>
