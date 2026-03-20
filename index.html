@@ -30,7 +30,6 @@
         .main-board { background: var(--main-bg); overflow: hidden; }
 
         /* --- 2. 介面遮罩與動畫 --- */
-        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 9999; display: flex; justify-content: center; align-items: center; color: white; }
         #save-loading { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; flex-direction: column; justify-content: center; align-items: center; color: white; }
         .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #27ae60; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -146,6 +145,7 @@
         .footer-link:hover { color: #f1c40f; border-bottom: 1px solid #f1c40f; }
         .version-tag { position: absolute; left: 15px; opacity: 0.3; font-family: monospace; letter-spacing: 1px; }
     </style>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body id="main-body">
 
@@ -156,18 +156,7 @@
     <div id="loading-text">雲端存檔中...</div>
 </div>
 
-<div id="login-overlay">
-    <div class="login-box">
-        <h2 id="auth-title">登入儀表板</h2>
-        <div id="input-area">
-            <input type="text" id="user-id" placeholder="帳號 (流水號 0001)">
-            <input type="password" id="user-pw" placeholder="密碼">
-        </div>
-        <button type="button" class="btn-primary" id="auth-main-btn" onclick="window.handleAuth()">進入系統</button>
-        <button type="button" class="btn-guest" id="guest-btn" onclick="window.handleGuestLogin()">訪客登入</button>
-        <button type="button" class="btn-reg-mode" id="auth-toggle-btn" onclick="window.toggleAuthMode()">註冊</button>
-    </div>
-</div>
+<!-- 移除登入遮罩 -->
 
 <div class="dashboard-container">
     <aside class="panel sidebar-fixed" id="left-panel">
@@ -186,8 +175,19 @@
             <button class="btn" onclick="window.openBgMenu('left', event)">🎨背景</button>
             <button class="btn btn-lock" id="btn-lock" onclick="window.toggleLock()">🔓 解鎖中</button>
             <button class="btn btn-save" onclick="window.saveData()">💾存檔</button>
-            <span class="top-account-info" id="top-display-id">ID: ----</span>
-            <button class="btn" onclick="window.logout()">登出</button>
+            <button class="btn" style="background:#e67e22; color:white; border:none;" onclick="window.exportToJSON()">📤匯出備份</button>
+            <button class="btn" style="background:#d35400; color:white; border:none;" onclick="window.triggerImport()">📥匯入備份</button>
+            <input type="file" id="import-file" style="display:none" onchange="window.importFromJSON(this)">
+            <div id="g_id_onload"
+                 data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
+                 data-context="signin"
+                 data-ux_mode="popup"
+                 data-callback="handleCredentialResponse"
+                 data-auto_prompt="false">
+            </div>
+            <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="signin_with" data-size="small" data-logo_alignment="left"></div>
+            <span class="top-account-info" id="top-display-id">ID: 本機存檔</span>
+            <button class="btn" onclick="window.resetSystem()">🧹清空全部</button>
         </div>
         <table class="exam-table" id="exam-table">
             <thead>
@@ -235,7 +235,7 @@
     </div>
 
     <footer class="footer">
-        <span class="version-tag">v.34版</span>
+        <span class="version-tag">v.3.5版</span>
         <div class="day-switcher">
             <button class="day-btn day-btn-copy" onclick="window.copyDayOne()" title="將第1天內容複製到這裡">📥複製第1天</button>
             <button class="day-btn active" id="btn-day-1" onclick="window.switchDay(1)">第一天</button>
@@ -251,158 +251,132 @@
 </div>
 
 <script>
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbwN2TyQCQSZ8X8oTMzOPLoSv4upcRO5TuI3Fogve-nygWoWh5iX1ZrLslhMDgnwrzkWGw/exec'; 
+    const STORAGE_KEY = 'exam_timetable_pro_data';
 
-    var currentUser = { id: '', pw: '' };
-    var isRegisterMode = false;
+    var currentUser = { id: '本機用戶', email: '' };
     var activePanelId = '';
     var isLocked = false;
     
     var currentDay = 1;
     var allDaysData = { 1: null, 2: null, 3: null };
 
-    // --- 1. 登入系統 ---
-    window.toggleAuthMode = function() {
-        isRegisterMode = !isRegisterMode;
-        var authTitle = document.getElementById('auth-title');
-        var inputArea = document.getElementById('input-area');
-        var mainBtn = document.getElementById('auth-main-btn');
-        var guestBtn = document.getElementById('guest-btn');
-        var toggleBtn = document.getElementById('auth-toggle-btn');
+    // --- 1. 初始化與儲存邏輯 ---
+    window.onload = function() {
+        window.loadFromLocalStorage();
+        initResizableTable();
+    };
 
-        if (isRegisterMode) {
-            authTitle.innerText = "設定新密碼";
-            inputArea.innerHTML = '<p style="font-size:15px; color:#e67e22; margin-bottom:10px; font-weight:bold;">系統會配發 4 個數字的帳號給你</p>' +
-                                '<input type="password" id="user-pw" placeholder="請設定 4 位數字密碼 (如 0523)" maxlength="4">';
-            mainBtn.innerText = "獲取帳號並登入";
-            guestBtn.style.display = "none";
-            toggleBtn.innerText = "返回登入";
+    window.saveToLocalStorage = function() {
+        allDaysData[currentDay] = window.getCurrentState();
+        const pack = {
+            multiDay: true,
+            lastActiveDay: currentDay,
+            days: allDaysData,
+            user: currentUser,
+            version: 'v.3.5'
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(pack));
+        console.log('Data saved to localStorage');
+    };
+
+    window.loadFromLocalStorage = function() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                if (parsed.days) {
+                    allDaysData = parsed.days;
+                    currentUser = parsed.user || currentUser;
+                    document.getElementById('display-id').innerText = currentUser.id;
+                    if (currentUser.email) document.getElementById('top-display-id').innerText = currentUser.email;
+                    
+                    const savedDay = parsed.lastActiveDay || 1;
+                    switchDay(savedDay, true);
+                }
+            } catch (e) {
+                console.error("Failed to parse local storage", e);
+                switchDay(1, true);
+            }
         } else {
-            authTitle.innerText = "登入儀表板";
-            inputArea.innerHTML = '<input type="text" id="user-id" placeholder="帳號 (流水號 0001)">' +
-                                '<input type="password" id="user-pw" placeholder="密碼">';
-            mainBtn.innerText = "進入系統";
-            guestBtn.style.display = "block";
-            toggleBtn.innerText = "註冊";
+            switchDay(1, true);
         }
     };
 
-    window.handleAuth = async function() {
-        var idIn = document.getElementById('user-id');
-        var pwIn = document.getElementById('user-pw');
-        var idVal = idIn ? idIn.value : "";
-        var rawPw = pwIn ? pwIn.value : "";
-        var pwVal = rawPw.toString().padStart(4, '0');
-
-        if (isRegisterMode && !/^\d{4}$/.test(pwVal)) { alert("密碼請設定為 4 位數字！"); return; }
-        if (!isRegisterMode && !idVal) { alert("請輸入帳號"); return; }
-        if (!rawPw) { alert("請輸入密碼"); return; }
-
-        var btn = document.getElementById('auth-main-btn');
-        btn.disabled = true; btn.innerText = "連線中...";
-
-        try {
-            var res = await fetch(GAS_URL, { method: 'POST', mode: 'cors', body: JSON.stringify({ action: isRegisterMode ? "register" : "login", userID: idVal, password: pwVal }) });
-            var result = await res.json();
-            if (result.success) {
-                alert(result.message);
-                currentUser.id = (result.userID || idVal).toString().padStart(4, '0');
-                currentUser.pw = pwVal;
-                document.getElementById('display-id').innerText = currentUser.id;
-                document.getElementById('top-display-id').innerText = "ID: " + currentUser.id;
-                document.getElementById('login-overlay').style.display = 'none';
-                
-                if (result.dashboardData) {
-                    var parsed = JSON.parse(result.dashboardData);
-                    if (parsed.multiDay === true) {
-                        allDaysData = parsed.days;
-                        if(!allDaysData[1]) allDaysData[1] = null;
-                        if(!allDaysData[2]) allDaysData[2] = null;
-                        if(!allDaysData[3]) allDaysData[3] = null;
-                        var savedDay = parsed.lastActiveDay || 1;
-                        switchDay(savedDay, true);
-                    } else {
-                        allDaysData[1] = parsed;
-                        switchDay(1, true);
-                    }
-                } else {
-                    switchDay(1, true);
-                }
-            } else { alert(result.message); }
-        } catch (e) { console.error(e); alert("連線失敗！"); }
-        finally { btn.disabled = false; btn.innerText = isRegisterMode ? "獲取帳號" : "進入系統"; }
+    window.saveData = function() {
+        window.saveToLocalStorage();
+        alert("資料已儲存在瀏覽器本機快取中。");
     };
 
-    window.handleGuestLogin = function() {
-        currentUser.id = "訪客"; currentUser.pw = "";
-        document.getElementById('display-id').innerText = "訪客 (無存檔功能)";
-        document.getElementById('top-display-id').innerText = "訪客";
-        document.getElementById('login-overlay').style.display = 'none';
-        switchDay(1, true);
+    window.resetSystem = function() {
+        if (confirm("確定要清空所有資料嗎？(包含本機快取)")) {
+            localStorage.removeItem(STORAGE_KEY);
+            location.reload();
+        }
     };
 
-    window.logout = function() {
-        alert("您的帳號是 " + currentUser.id + "，已登出");
-        location.reload();
+    // Google Login Callback
+    window.handleCredentialResponse = function(response) {
+        // 解碼 JWT (簡單做法，僅用於顯示)
+        const base64Url = response.credential.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+
+        const profile = JSON.parse(jsonPayload);
+        currentUser.id = profile.name;
+        currentUser.email = profile.email;
+        document.getElementById('display-id').innerText = profile.name;
+        document.getElementById('top-display-id').innerText = profile.email;
+        alert("Google 登入成功：" + profile.name);
+        window.saveToLocalStorage();
     };
 
-    // --- 2. 存取邏輯 ---
-    window.getCurrentState = function() {
-        var titleEl = document.getElementById('db-title');
-        var data = {
-            title: titleEl.innerText, titleBold: titleEl.style.fontWeight === 'bold', titleColor: titleEl.style.color,
-            leftBg: document.getElementById('left-panel').style.background, rightBg: document.getElementById('right-panel').style.background,
-            panelTextColor: document.getElementById('left-panel').style.color, tableFontSize: document.getElementById('exam-table').style.fontSize,
-            isLocked: isLocked,
-            colWidths: [document.getElementById('th-1').style.width, document.getElementById('th-2').style.width, document.getElementById('th-3').style.width, document.getElementById('th-4').style.width],
-            table: [], widgets: []
-        };
-        document.querySelectorAll('#exam-tbody tr').forEach(function(row) {
-            data.table.push({ subject: row.cells[0].innerText, time: row.cells[1].innerText, bold: row.style.fontWeight === 'bold', color: row.style.color });
-        });
-        document.querySelectorAll('.widget').forEach(function(w) {
-            var type = 'note';
-            if (w.classList.contains('widget-digital')) type = 'digital';
-            else if (w.classList.contains('widget-analog')) type = 'analog';
-            else if (w.classList.contains('widget-announce')) type = 'announce';
-            else if (w.classList.contains('widget-traffic')) type = 'traffic';
-            else if (w.classList.contains('widget-picker')) type = 'picker';
-            
-            var txt = w.querySelector('textarea');
-            var extra = '';
-            
-            if (type === 'traffic') {
-                var activeLight = w.querySelector('.light.active');
-                if (activeLight) extra = activeLight.dataset.color;
-            } else if (type === 'picker') {
-                var maxInput = w.querySelector('.picker-settings input');
-                if(maxInput) extra = maxInput.value;
-            } else if (w.querySelector('input')) {
-                extra = w.querySelector('input').value;
-            }
-
-            data.widgets.push({ 
-                type, top: w.style.top, left: w.style.left, width: w.style.width, height: w.style.height, 
-                content: txt ? txt.value : '', extra: extra,
-                fontSize: txt ? txt.style.fontSize : '16px', hacker: w.classList.contains('style-hacker')
-            });
-        });
-        return data;
-    }
-
-    window.saveData = async function() {
-        if (!currentUser.id || currentUser.id === "訪客") { alert("訪客無法存檔！"); return; }
+    // --- 2. 匯出/匯入邏輯 ---
+    window.exportToJSON = function() {
         allDaysData[currentDay] = window.getCurrentState();
-        var pack = { multiDay: true, lastActiveDay: currentDay, days: allDaysData };
-        var jsonStr = JSON.stringify(pack);
-        if (jsonStr.length > 45000) { alert("總資料量過大，請減少部分內容。"); return; } 
+        const pack = {
+            multiDay: true,
+            lastActiveDay: currentDay,
+            days: allDaysData,
+            user: currentUser,
+            timestamp: new Date().toISOString()
+        };
+        const blob = new Blob([JSON.stringify(pack, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `exam_timetable_backup_${new Date().toLocaleDateString().replace(/\//g, '-')}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
 
-        document.getElementById('save-loading').style.display = 'flex';
-        try {
-            var res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "save", userID: currentUser.id, password: currentUser.pw, dashboardData: jsonStr }) });
-            var resJ = await res.json(); alert(resJ.message);
-        } catch (e) { alert("存檔失敗。"); }
-        finally { document.getElementById('save-loading').style.display = 'none'; }
+    window.triggerImport = function() {
+        document.getElementById('import-file').click();
+    };
+
+    window.importFromJSON = function(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                if (data.days) {
+                    allDaysData = data.days;
+                    currentUser = data.user || currentUser;
+                    const dayToLoad = data.lastActiveDay || 1;
+                    switchDay(dayToLoad, true);
+                    window.saveToLocalStorage();
+                    alert("匯入成功！");
+                } else {
+                    alert("無效的備份檔案格式。");
+                }
+            } catch (err) {
+                alert("讀取檔案失敗：" + err.message);
+            }
+        };
+        reader.readAsText(file);
     };
 
     window.switchDay = function(dayNum, forceInit) {
