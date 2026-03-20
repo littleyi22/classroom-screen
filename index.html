@@ -10,7 +10,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body, html { height: 100%; font-family: "Microsoft JhengHei", sans-serif; overflow: hidden; }
 
-        .dashboard-container { display: grid; grid-template-columns: 50% 50%; grid-template-rows: 1fr 40px; height: 100vh; }
+        .dashboard-container { display: grid; grid-template-columns: 50% 50%; grid-template-rows: 1fr auto; height: 100vh; }
 
         @media (max-width: 768px) {
             .dashboard-container { grid-template-columns: 100%; }
@@ -131,19 +131,24 @@
         .bg-option-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; }
         .bg-btn { width: 100%; height: 40px; border: 1px solid #ddd; cursor: pointer; border-radius: 6px; font-size: 10px; font-weight: bold; }
 
-        .footer { grid-column: 1/3; background: #2c3e50; color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; gap: 15px; position: relative;}
+        .footer { grid-column: 1/3; background: #2c3e50; color: white; display: flex; align-items: center; justify-content: space-between; font-size: 11px; padding: 5px 20px; position: relative; min-height: 75px; border-top: 3px solid #f39c12; box-shadow: 0 -4px 15px rgba(0,0,0,0.4); }
+        .footer-section { display: flex; align-items: center; gap: 12px; }
+        .footer-left { flex: 1; justify-content: flex-start; }
+        .footer-center { flex: 0; justify-content: center; min-width: 350px; }
+        .footer-right { flex: 1; justify-content: flex-end; align-items: center; gap: 15px; }
         
-        .day-switcher { display: flex; gap: 2px; margin-right: 15px; }
-        .day-btn { background: #34495e; color: #bdc3c7; border: 1px solid #34495e; padding: 4px 12px; cursor: pointer; font-size: 12px; transition: all 0.3s; border-radius: 4px 4px 0 0; margin-top: 4px; }
-        .day-btn:hover { background: #3e5871; color: white; }
-        .day-btn.active { background: #f39c12; color: #fff; border-color: #f39c12; font-weight: bold; transform: translateY(-2px); }
+        .version-tag { color: #f1c40f; font-weight: bold; font-family: monospace; letter-spacing: 1px; font-size: 13px; margin-bottom: 3px; }
+        .footer .btn { padding: 4px 10px; font-size: 12px; min-width: 60px; border-radius: 5px; }
+        
+        .day-switcher { display: flex; gap: 5px; align-items: center; }
+        .day-btn { background: #34495e; color: #bdc3c7; border: 1px solid #34495e; padding: 10px 18px; cursor: pointer; font-size: 13px; transition: 0.3s; border-radius: 8px; white-space: nowrap; }
+        .day-btn:hover { background: #4b6584; color: white; }
+        .day-btn.active { background: #f39c12; color: #fff; border-color: #f39c12; font-weight: bold; transform: scale(1.05); box-shadow: 0 0 10px rgba(243,156,18,0.5); }
         .day-btn-copy { background: #6c5ce7; color: #ecf0f1; border-color: #6c5ce7; font-weight: bold; }
         .day-btn-copy:hover { background: #a29bfe; color: white; }
 
-        /* 新增：Footer 連結樣式與版本標籤 */
         .footer-link { color: #ecf0f1; text-decoration: none; border-bottom: 1px dashed #7f8c8d; transition: all 0.3s; }
         .footer-link:hover { color: #f1c40f; border-bottom: 1px solid #f1c40f; }
-        .version-tag { position: absolute; left: 15px; opacity: 0.3; font-family: monospace; letter-spacing: 1px; }
     </style>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -174,20 +179,7 @@
             <button class="btn" onclick="window.changeFontSize(-2)">A-</button>
             <button class="btn" onclick="window.openBgMenu('left', event)">🎨背景</button>
             <button class="btn btn-lock" id="btn-lock" onclick="window.toggleLock()">🔓 解鎖中</button>
-            <button class="btn btn-save" onclick="window.saveData()">💾存檔</button>
-            <button class="btn" style="background:#e67e22; color:white; border:none;" onclick="window.exportToJSON()">📤匯出備份</button>
-            <button class="btn" style="background:#d35400; color:white; border:none;" onclick="window.triggerImport()">📥匯入備份</button>
             <input type="file" id="import-file" style="display:none" onchange="window.importFromJSON(this)">
-            <div id="g_id_onload"
-                 data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
-                 data-context="signin"
-                 data-ux_mode="popup"
-                 data-callback="handleCredentialResponse"
-                 data-auto_prompt="false">
-            </div>
-            <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="signin_with" data-size="small" data-logo_alignment="left"></div>
-            <span class="top-account-info" id="top-display-id">ID: 本機存檔</span>
-            <button class="btn" onclick="window.resetSystem()">🧹清空全部</button>
         </div>
         <table class="exam-table" id="exam-table">
             <thead>
@@ -235,17 +227,44 @@
     </div>
 
     <footer class="footer">
-        <span class="version-tag">v.3.5版</span>
-        <div class="day-switcher">
-            <button class="day-btn day-btn-copy" onclick="window.copyDayOne()" title="將第1天內容複製到這裡">📥複製第1天</button>
-            <button class="day-btn active" id="btn-day-1" onclick="window.switchDay(1)">第一天</button>
-            <button class="day-btn" id="btn-day-2" onclick="window.switchDay(2)">第二天</button>
-            <button class="day-btn" id="btn-day-3" onclick="window.switchDay(3)">第三天</button>
+        <div class="footer-section footer-left">
+            <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 2px;">
+                <span class="version-tag">v.4.1版</span>
+                <div style="display: flex; gap: 4px;">
+                    <button class="btn btn-save" style="background:#2ecc71; color:white; border:none;" onclick="window.saveData()">💾存檔</button>
+                    <button class="btn" style="background:#e67e22; color:white; border:none;" onclick="window.exportToJSON()">📤匯出</button>
+                    <button class="btn" style="background:#d35400; color:white; border:none;" onclick="window.triggerImport()">📥匯入</button>
+                    <button class="btn" style="background:#95a5a6; color:white; border:none;" onclick="window.resetSystem()">🧹清空</button>
+                </div>
+            </div>
         </div>
-        <div>
-            帳號：<span id="display-id">---</span> | 
-            <a href="https://www.facebook.com/share/1K5MsceXxS/?mibextid=wwXIfr" target="_blank" class="footer-link">奕鈞老師製作</a> 
-            &copy; 2026
+
+        <div class="footer-section footer-center">
+            <div class="day-switcher">
+                <button class="day-btn day-btn-copy" onclick="window.copyDayOne()" title="將第1天內容複製到這裡">📥複製第1天</button>
+                <button class="day-btn active" id="btn-day-1" onclick="window.switchDay(1)">第一天</button>
+                <button class="day-btn" id="btn-day-2" onclick="window.switchDay(2)">第二天</button>
+                <button class="day-btn" id="btn-day-3" onclick="window.switchDay(3)">第三天</button>
+            </div>
+        </div>
+
+        <div class="footer-section footer-right">
+            <div class="google-auth-area" style="display: flex; flex-direction: column; align-items: flex-end; gap: 5px;">
+                <div id="g_id_onload"
+                     data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
+                     data-context="signin"
+                     data-ux_mode="popup"
+                     data-callback="handleCredentialResponse"
+                     data-auto_prompt="false">
+                </div>
+                <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="signin_with" data-size="small" data-logo_alignment="left"></div>
+                
+                <div style="font-size: 12px; line-height: 1.4; text-align: right;">
+                    <span id="top-display-id" style="font-weight: bold; color: #f1c40f;">ID: 本機存檔</span> | 
+                    帳號：<span id="display-id">---</span><br>
+                    <a href="https://www.facebook.com/share/1K5MsceXxS/?mibextid=wwXIfr" target="_blank" class="footer-link">奕鈞老師製作</a> &copy; 2026
+                </div>
+            </div>
         </div>
     </footer>
 </div>
@@ -264,6 +283,17 @@
     window.onload = function() {
         window.loadFromLocalStorage();
         initResizableTable();
+        
+        // 監聽所有輸入變動，達成「即時存檔」
+        document.querySelector('.dashboard-container').addEventListener('input', function() {
+            if (!isLocked) {
+                clearTimeout(window.saveTimer);
+                window.saveTimer = setTimeout(function() {
+                    allDaysData[currentDay] = window.getCurrentState();
+                    window.saveToLocalStorage();
+                }, 1000); // 延遲 1 秒存檔，避免輸入太快造成效能問題
+            }
+        });
     };
 
     window.saveToLocalStorage = function() {
@@ -273,7 +303,7 @@
             lastActiveDay: currentDay,
             days: allDaysData,
             user: currentUser,
-            version: 'v.3.5'
+            version: 'v.4.1'
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(pack));
         console.log('Data saved to localStorage');
@@ -291,14 +321,14 @@
                     if (currentUser.email) document.getElementById('top-display-id').innerText = currentUser.email;
                     
                     const savedDay = parsed.lastActiveDay || 1;
-                    switchDay(savedDay, true);
+                    window.switchDay(savedDay, true);
                 }
             } catch (e) {
                 console.error("Failed to parse local storage", e);
-                switchDay(1, true);
+                window.switchDay(1, true);
             }
         } else {
-            switchDay(1, true);
+            window.switchDay(1, true);
         }
     };
 
@@ -366,7 +396,7 @@
                     allDaysData = data.days;
                     currentUser = data.user || currentUser;
                     const dayToLoad = data.lastActiveDay || 1;
-                    switchDay(dayToLoad, true);
+                    window.switchDay(dayToLoad, true);
                     window.saveToLocalStorage();
                     alert("匯入成功！");
                 } else {
@@ -381,7 +411,11 @@
 
     window.switchDay = function(dayNum, forceInit) {
         if (!forceInit && currentDay === dayNum) return;
-        if (!forceInit) allDaysData[currentDay] = window.getCurrentState();
+        if (!forceInit) {
+            try { 
+                allDaysData[currentDay] = window.getCurrentState(); 
+            } catch(e) { console.error("Save before switch failed", e); }
+        }
 
         currentDay = dayNum;
         document.querySelectorAll('.day-btn').forEach(b => {
@@ -402,6 +436,62 @@
             document.getElementById('right-panel').style.background = "";
             window.toggleLock(false);
         }
+    };
+
+    window.getCurrentState = function() {
+        var tableData = [];
+        document.querySelectorAll('#exam-tbody tr').forEach(row => {
+            tableData.push({
+                subject: row.cells[0].innerText,
+                time: row.cells[1].innerText,
+                bold: row.style.fontWeight === 'bold',
+                color: row.style.color
+            });
+        });
+
+        var widgetsData = [];
+        document.querySelectorAll('.widget').forEach(w => {
+            var type = '';
+            if (w.classList.contains('widget-digital')) type = 'digital';
+            else if (w.classList.contains('widget-analog')) type = 'analog';
+            else if (w.classList.contains('widget-note')) type = 'note';
+            else if (w.classList.contains('widget-announce')) type = 'announce';
+            else if (w.classList.contains('widget-traffic')) type = 'traffic';
+            else if (w.classList.contains('widget-picker')) type = 'picker';
+
+            var extra = '';
+            if (type === 'announce') extra = w.querySelector('input').value;
+            else if (type === 'picker') extra = w.querySelector('.picker-settings input').value;
+            else if (type === 'traffic') {
+                var active = w.querySelector('.light.active');
+                if (active) extra = active.dataset.color;
+            }
+
+            widgetsData.push({
+                type: type,
+                top: w.style.top,
+                left: w.style.left,
+                width: w.style.width,
+                height: w.style.height,
+                content: (type === 'note' || type === 'announce') ? w.querySelector('textarea').value : '',
+                fontSize: (type === 'note' || type === 'announce') ? w.querySelector('textarea').style.fontSize : '',
+                extra: extra,
+                hacker: w.classList.contains('style-hacker')
+            });
+        });
+
+        return {
+            title: document.getElementById('db-title').innerText,
+            titleBold: document.getElementById('db-title').style.fontWeight === 'bold',
+            titleColor: document.getElementById('db-title').style.color,
+            leftBg: document.getElementById('left-panel').style.background,
+            rightBg: document.getElementById('right-panel').style.background,
+            panelTextColor: document.getElementById('left-panel').style.color,
+            tableFontSize: document.getElementById('exam-table').style.fontSize,
+            table: tableData,
+            widgets: widgetsData,
+            isLocked: isLocked
+        };
     };
 
     window.copyDayOne = function() {
@@ -663,6 +753,14 @@ html += '<button class="btn-close" onclick="this.closest(\'.widget\').remove()">
             } catch(e) {}
         });
     }, 1000);
+
+    // --- 加強版自動存檔：每 10 秒儲存一次狀態到本機瀏覽器 ---
+    setInterval(function() {
+        if (!isLocked) {
+           allDaysData[currentDay] = window.getCurrentState();
+           window.saveToLocalStorage();
+        }
+    }, 10000);
 
     window.onclick = function() { var m = document.getElementById('bg-selector'); if(m) m.style.display='none'; };
     initResizableTable();
