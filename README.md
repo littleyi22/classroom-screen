@@ -1,8 +1,8 @@
-# 🗓️ 段考時程表 Pro (v.4.1 Standalone)
+# 🗓️ 段考時程表 Pro (v.5.2 Cloud Sync)
 
-這是一個純網頁版（Standalone HTML）的段考時程管理工具。原先基於 Google Apps Script (GAS) 構建，現已完全轉化為本機執行版本，具備離線使用、瀏覽器快取存檔與手動備份功能。
+這是一個純網頁版（Standalone HTML）的段考時程管理工具。原先基於 Google Apps Script (GAS) 構建，現已完全轉化為本機執行版本，具備離線使用、瀏覽器快取存檔與雲端同步功能。
 
-![版本](https://img.shields.io/badge/Version-4.1-orange)
+![版本](https://img.shields.io/badge/Version-5.2-orange)
 ![技術](https://img.shields.io/badge/Tech-HTML5_/_CSS3_/_JS-blue)
 
 ## ✨ 特色功能
@@ -37,7 +37,7 @@
 
 - **製作人**：奕鈞老師
 - **社群連結**：[奕鈞老師臉書專頁](https://www.facebook.com/share/1K5MsceXxS/?mibextid=wwXIfr)
-- **版本說明**：v.4.1 穩定版
+- **版本說明**：v.5.2 穩定版
 
 ---
 © 2026 課堂工具系列. All rights reserved.
