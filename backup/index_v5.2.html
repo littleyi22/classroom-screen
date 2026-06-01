@@ -3,34 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>段考時程表Pro V6.0</title>
+    <title>段考時程表Pro</title>
     <style>
-        /* --- Outfit and Noto Sans TC Fonts --- */
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap');
-
         /* --- 1. 基礎與 RWD 佈局 --- */
-        :root { 
-            --sidebar-bg: #fcfcfc; 
-            --main-bg: #f0f2f5; 
-            --text-color: #2c3e50; 
-            --primary: #6c5ce7;
-            --primary-hover: #5b4bc4;
-            --success: #2ecc71;
-            --warning: #f1c40f;
-            --danger: #e74c3c;
-            --border-radius-lg: 16px;
-            --border-radius-md: 10px;
-            --border-radius-sm: 6px;
-            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --font-family: 'Outfit', 'Noto Sans TC', "Microsoft JhengHei", sans-serif;
-            --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
-            --glass-bg: rgba(255, 255, 255, 0.75);
-            --glass-border: 1px solid rgba(255, 255, 255, 0.4);
-            --glass-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-        }
-
+        :root { --sidebar-bg: #fcfcfc; --main-bg: #f0f2f5; --text-color: #333; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body, html { height: 100%; font-family: var(--font-family); overflow: hidden; background: #f0f2f5; color: var(--text-color); }
+        body, html { height: 100%; font-family: "Microsoft JhengHei", sans-serif; overflow: hidden; }
 
         .dashboard-container { display: grid; grid-template-columns: 50% 50%; grid-template-rows: 1fr auto; height: 100vh; }
 
@@ -48,193 +26,99 @@
         }
 
         .panel { position: relative; padding: 25px; overflow-y: auto; transition: background 0.4s ease, color 0.4s ease; background-size: cover !important; }
-        .sidebar-fixed { background: var(--sidebar-bg); border-right: 1px solid rgba(0,0,0,0.08); color: var(--text-color); }
+        .sidebar-fixed { background: var(--sidebar-bg); border-right: 2px solid #ddd; color: var(--text-color); }
         .main-board { background: var(--main-bg); overflow: hidden; }
 
         /* --- 2. 介面遮罩與動畫 --- */
-        #save-loading { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.65); backdrop-filter: blur(5px); z-index: 10000; flex-direction: column; justify-content: center; align-items: center; color: white; }
-        .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid var(--success); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        #save-loading { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; flex-direction: column; justify-content: center; align-items: center; color: white; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #27ae60; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* --- 3. 工具列與表格 --- */
-        .toolbar { 
-            background: rgba(255, 255, 255, 0.8); 
-            backdrop-filter: blur(10px); 
-            -webkit-backdrop-filter: blur(10px); 
-            border: 1px solid rgba(255, 255, 255, 0.5); 
-            padding: 10px; 
-            border-radius: var(--border-radius-md); 
-            margin-bottom: 20px; 
-            display: flex; 
-            gap: 8px; 
-            flex-wrap: wrap; 
-            align-items: center; 
-            color: var(--text-color) !important;
-            box-shadow: var(--card-shadow);
-        }
-
-        .btn { 
-            padding: 6px 12px; 
-            cursor: pointer; 
-            border: 1px solid rgba(0,0,0,0.08); 
-            border-radius: var(--border-radius-sm); 
-            background: white; 
-            font-size: 13px; 
-            font-weight: 600; 
-            color: var(--text-color); 
-            transition: var(--transition-smooth);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .btn:hover { 
-            background: #f8f9fa; 
-            transform: translateY(-1.5px); 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-            border-color: rgba(0,0,0,0.15);
-        }
-        .btn:active {
-            transform: translateY(0);
-        }
+        .login-box { background: #fff; color: #333; padding: 40px; border-radius: 12px; width: 400px; text-align: center; }
+        .login-box h2 { margin-bottom: 10px; color: #2c3e50; }
+        .login-box input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; }
         
-        .btn-save { background: var(--success) !important; color: white !important; border: none; }
-        .btn-save:hover { background: #27ae60 !important; }
-        .btn-lock { background: var(--warning) !important; color: white !important; border: none; }
-        .btn-lock:hover { background: #e67e22 !important; }
-        .btn-picker { background: var(--primary) !important; color: white !important; border: none; }
-        .btn-picker:hover { background: var(--primary-hover) !important; }
+        .btn-primary { background: #3498db; color: white; border: none; padding: 12px; border-radius: 6px; width: 100%; cursor: pointer; font-size: 16px; font-weight: bold; margin-bottom: 8px; }
+        .btn-guest { background: #95a5a6; color: white; border: none; padding: 12px; border-radius: 6px; width: 100%; cursor: pointer; font-size: 14px; margin-bottom: 8px; }
+        .btn-reg-mode { background: #ecf0f1; color: #2c3e50; border: 1px solid #bdc3c7; padding: 10px; border-radius: 6px; width: 100%; cursor: pointer; font-size: 14px; font-weight: bold; }
 
-        /* 分類按鈕特別樣式 */
-        .btn.active-hidden {
-            background: #e9ecef !important;
-            color: #6c757d !important;
-            border-color: #dee2e6 !important;
-            text-decoration: line-through;
-            opacity: 0.65;
-            transform: none !important;
-            box-shadow: none !important;
-        }
+        /* --- 3. 工具列與表格 --- */
+        .toolbar { background: rgba(255,255,255,0.85); padding: 8px; border-radius: 8px; margin-bottom: 15px; display: flex; gap: 5px; flex-wrap: wrap; align-items: center; color: #333 !important; }
+        .btn { padding: 5px 8px; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: white; font-size: 12px; font-weight: bold; color: #333; }
+        .btn:hover { background: #f8f9fa; }
+        .btn-save { background: #27ae60 !important; color: white !important; border: none; }
+        .btn-lock { background: #f39c12 !important; color: white !important; border: none; }
+        .btn-picker { background: #9b59b6 !important; color: white !important; border: none; }
 
-        .title-area { display: flex; align-items: center; gap: 10px; }
-        .title-ctrl { display: flex; gap: 4px; }
+        .title-area { display: flex; align-items: center; gap: 8px; }
+        .title-ctrl { display: flex; gap: 3px; }
         .top-account-info { margin-left: auto; font-size: 12px; font-weight: bold; opacity: 0.8; padding-right: 5px; }
 
-        .exam-table { width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.3); table-layout: fixed; color: inherit; border-radius: var(--border-radius-md); overflow: hidden; box-shadow: var(--card-shadow); }
-        .exam-table { width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.3); table-layout: fixed; color: inherit; border-radius: var(--border-radius-md); overflow: hidden; box-shadow: var(--card-shadow); border: 2px solid var(--text-color); }
-        .exam-table th { background: rgba(0, 0, 0, 0.05); font-weight: 700; border: 2px solid var(--text-color); padding: 10px 8px; text-align: center; position: relative; }
-        .exam-table td { border: 2px solid var(--text-color); padding: 8px 6px; text-align: center; overflow-wrap: anywhere; vertical-align: middle; position: relative; transition: background-color 0.2s; }
-        .exam-table tr:hover td { background-color: rgba(255,255,255,0.4); }
-        .exam-table td:nth-child(1) { text-align: left; padding-left: 12px; font-weight: 500; }
+        .exam-table { width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.2); table-layout: fixed; color: inherit; }
+        .exam-table th, .exam-table td { border: 1px solid rgba(150,150,150,0.5); padding: 6px; text-align: center; overflow-wrap: anywhere; vertical-align: middle; position: relative; }
+        .exam-table td:nth-child(1) { text-align: left; padding-left: 8px; }
         
-        .resizer { position: absolute; right: 0; top: 0; width: 6px; cursor: col-resize; height: 100%; z-index: 5; background: transparent; transition: background-color 0.2s; }
-        .resizer:hover { background: rgba(108,92,231,0.5); }
+        .resizer { position: absolute; right: 0; top: 0; width: 6px; cursor: col-resize; height: 100%; z-index: 5; }
+        .energy-bar { width: 100%; height: 14px; background: rgba(0,0,0,0.1); border-radius: 7px; overflow: hidden; }
+        .energy-fill { width: 100%; height: 100%; background: #4caf50; transition: width 1s, background-color 0.5s; }
         
-        .energy-bar { width: 100%; height: 16px; background: rgba(0,0,0,0.06); border-radius: 8px; overflow: hidden; padding: 2px; }
-        .energy-fill { width: 100%; height: 100%; background: var(--success); border-radius: 6px; transition: width 1s ease, background-color 0.5s ease; }
+        .mgmt-cell { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; gap: 4px; align-items: center; justify-content: center; width: 100%; }
         
-        .mgmt-cell { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; gap: 6px; align-items: center; justify-content: center; width: 100%; }
-        
-        .btn-sm { width: 28px; height: 28px; border: 1px solid rgba(0,0,0,0.1); background: #fff; cursor: pointer; border-radius: var(--border-radius-sm); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; color: var(--text-color); position: relative; overflow: hidden; flex-shrink: 0; transition: var(--transition-smooth); }
-        .btn-sm:hover { background: #f1f3f5; border-color: rgba(0,0,0,0.2); }
+        .btn-sm { width: 26px; height: 26px; border: 1px solid #ddd; background: #fff; cursor: pointer; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: #333; position: relative; overflow: hidden; flex-shrink: 0; }
         .btn-sm input[type="color"] { position: absolute; top: -10px; left: -10px; width: 50px; height: 50px; cursor: pointer; opacity: 0; }
 
-        /* --- 4. 小工具與磨砂玻璃 --- */
-        .widget { 
-            position: absolute; 
-            background: var(--glass-bg); 
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: var(--glass-border);
-            border-radius: var(--border-radius-lg); 
-            box-shadow: var(--glass-shadow); 
-            padding: 35px 15px 15px; 
-            min-width: 100px; 
-            resize: both; 
-            overflow: hidden; 
-            z-index: 10; 
-            color: var(--text-color);
-            transition: box-shadow 0.3s ease, height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .widget:hover {
-            box-shadow: 0 15px 35px rgba(0,0,0,0.12);
-        }
-        
-        /* 折疊與分類隱藏樣式 */
-        .widget.collapsed {
-            height: 35px !important;
-            resize: none !important;
-            padding-bottom: 0 !important;
-            overflow: hidden !important;
-        }
-        .widget.collapsed > *:not(.widget-handle):not(.widget-ctrl) {
-            display: none !important;
-        }
+        /* --- 4. 小工具 --- */
+        .widget { position: absolute; background: white; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); padding: 35px 15px 15px; min-width: 100px; resize: both; overflow: hidden; z-index: 10; color: #333; }
+        .widget-handle { position: absolute; top: 0; left: 0; width: 100%; height: 35px; background: rgba(0,0,0,0.03); cursor: move; }
+        .widget-ctrl { position: absolute; top: 6px; right: 8px; display: flex; gap: 4px; z-index: 30; }
+        .btn-close { background: #ff5f56; color: white; border: none; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; cursor: pointer; }
+/* 新增這個樣式讓 A+ A- 按鈕好看一點 */
+.btn-widget {
+    background: white;
+    border: 1px solid #ccc;
+    color: #333;
+    width: 24px;
+    height: 18px;
+    border-radius: 4px;
+    font-size: 10px;
+    cursor: pointer;
+    margin-right: 2px;
+    font-weight: bold;
+}
+.btn-widget:hover {
+    background: #f0f0f0;
+    color: #000;
+}
 
-        .widget.category-hidden {
-            display: none !important;
-        }
-
-        .widget-handle { position: absolute; top: 0; left: 0; width: 100%; height: 35px; background: rgba(0,0,0,0.02); cursor: move; }
-        .widget-ctrl { position: absolute; top: 8px; right: 10px; display: flex; gap: 5px; z-index: 30; align-items: center; }
-        
-        .btn-close { 
-            background: #ff5f56; color: white; border: none; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; cursor: pointer; 
-            display: flex; align-items: center; justify-content: center; font-weight: bold; transition: var(--transition-smooth);
-        }
-        .btn-close:hover { background: #ff2c1f; transform: scale(1.1); }
-        
-        .btn-collapse {
-            background: #ffbd2e; color: white; border: none; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; cursor: pointer; 
-            display: flex; align-items: center; justify-content: center; font-weight: bold; transition: var(--transition-smooth);
-        }
-        .btn-collapse:hover { background: #df9e10; transform: scale(1.1); }
-
-        .btn-widget {
-            background: rgba(0,0,0,0.05);
-            border: none;
-            color: var(--text-color);
-            width: 24px;
-            height: 18px;
-            border-radius: 4px;
-            font-size: 10px;
-            cursor: pointer;
-            margin-right: 2px;
-            font-weight: bold;
-            transition: var(--transition-smooth);
-        }
-        .btn-widget:hover {
-            background: rgba(0,0,0,0.1);
-        }
 
         .clock-face { fill: white; stroke: #333; stroke-width: 2; }
         .hand { transform-origin: 50px 50px; stroke-linecap: round; }
         .hand-hour { stroke: #333; stroke-width: 4; transition: transform 0.5s cubic-bezier(0.4, 2.08, 0.55, 0.44); }
         .hand-min { stroke: #666; stroke-width: 3; transition: transform 0.5s cubic-bezier(0.4, 2.08, 0.55, 0.44); }
-        .hand-sec { stroke: var(--danger); stroke-width: 1.5; }
+        .hand-sec { stroke: #e74c3c; stroke-width: 1.5; }
 
-        .widget-note { background: rgba(255, 242, 171, 0.85) !important; border-bottom-right-radius: 30px; border: 1px solid rgba(230, 219, 153, 0.6); }
-        .widget-note::after { content: ""; position: absolute; bottom: 0; right: 0; width: 30px; height: 30px; background: linear-gradient(135deg, transparent 50%, rgba(0,0,0,0.08) 50%); pointer-events: none; }
+        .widget-note { background: #fff2ab !important; border-bottom-right-radius: 30px; border: 1px solid #e6db99; }
+        .widget-note::after { content: ""; position: absolute; bottom: 0; right: 0; width: 30px; height: 30px; background: linear-gradient(135deg, transparent 50%, rgba(0,0,0,0.1) 50%); pointer-events: none; }
 
-        .widget-announce { border-left: 8px solid var(--danger); }
+        .widget-announce { border-left: 8px solid #e74c3c; }
         .clock-digit { font-family: monospace; font-weight: bold; text-align: center; pointer-events: none; width: 100%; }
-        .style-hacker { background: #0a0f0d !important; color: #39ff14 !important; text-shadow: 0 0 8px #39ff14; border: 1px solid #1f3f22; }
-        .style-hacker .clock-digit { color: #39ff14 !important; }
+        .style-hacker { background: #000 !important; color: #00ff00 !important; text-shadow: 0 0 5px #00ff00; border: 2px solid #333; }
+        .style-hacker .clock-digit { color: #00ff00 !important; }
         
-        .widget textarea { width: 100%; border: none; background: transparent; outline: none; resize: none; font-family: inherit; font-size: 16px; color: inherit; line-height: 1.4; }
+        .widget textarea { width: 100%; border: none; background: transparent; outline: none; resize: none; font-family: inherit; font-size: 16px; color: inherit; }
 
         /* 紅綠燈 & 抽籤 */
-        .widget-traffic { background: rgba(44, 62, 80, 0.95) !important; border: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: center; align-items: center; }
+        .widget-traffic { background: #333 !important; border: 2px solid #555; display: flex; justify-content: center; align-items: center; }
         .traffic-container { display: flex; gap: 15px; justify-content: center; align-items: center; width: 100%; height: 100%; }
-        .light { width: 44px; height: 44px; border-radius: 50%; background: #455a64; cursor: pointer; transition: all 0.3s; border: 2px solid #1a252f; }
+        .light { width: 50px; height: 50px; border-radius: 50%; background: #555; cursor: pointer; transition: all 0.3s; border: 2px solid #222; }
         .light[data-color="red"].active { background: #ff4d4d; box-shadow: 0 0 20px #ff4d4d; border-color: #fff; }
         .light[data-color="yellow"].active { background: #ffcc00; box-shadow: 0 0 20px #ffcc00; border-color: #fff; }
         .light[data-color="green"].active { background: #2ecc71; box-shadow: 0 0 20px #2ecc71; border-color: #fff; }
 
-        .widget-picker { background: rgba(142, 68, 173, 0.85) !important; color: white !important; border: 1px solid rgba(255,255,255,0.15); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .widget-picker { background: #8e44ad !important; color: white !important; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .picker-settings { display: flex; gap: 5px; align-items: center; margin-bottom: 5px; font-size: 12px; }
-        .picker-settings input { width: 45px; border-radius: 4px; border: none; padding: 3px; text-align: center; font-weight: bold; color: #333; }
-        .picker-display { font-size: 60px; font-weight: bold; font-family: monospace; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); margin: 5px 0; height: 70px; display: flex; align-items: center; }
+        .picker-settings input { width: 40px; border-radius: 4px; border: none; padding: 2px; text-align: center; font-weight: bold; color: #333; }
+        .picker-display { font-size: 60px; font-weight: bold; font-family: monospace; text-shadow: 2px 2px 0px rgba(0,0,0,0.3); margin: 5px 0; height: 70px; display: flex; align-items: center; }
         .btn-draw { border: 2px solid white; background: transparent; color: white; padding: 5px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .btn-draw:hover { background: white; color: #8e44ad; }
         .btn-draw:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -243,45 +127,32 @@
         .locked .widget { resize: none !important; }
 
         /* 背景選單 */
-        .bg-menu { display: none; position: absolute; background: white; border: 1px solid #ccc; padding: 15px; border-radius: 12px; z-index: 2000; width: 340px; box-shadow: 0 15px 35px rgba(0,0,0,0.25); }
+        .bg-menu { display: none; position: absolute; background: white; border: 1px solid #ccc; padding: 15px; border-radius: 10px; z-index: 2000; width: 340px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .bg-option-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; }
-        .bg-btn { width: 100%; height: 40px; border: 1px solid #ddd; cursor: pointer; border-radius: 8px; font-size: 10px; font-weight: bold; transition: var(--transition-smooth); }
-        .bg-btn:hover { transform: scale(1.05); }
+        .bg-btn { width: 100%; height: 40px; border: 1px solid #ddd; cursor: pointer; border-radius: 6px; font-size: 10px; font-weight: bold; }
 
-        .footer { 
-            grid-column: 1/3; 
-            background: #1e272e; 
-            color: white; 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            font-size: 12px; 
-            padding: 10px 25px; 
-            position: relative; 
-            min-height: 80px; 
-            border-top: 3px solid var(--warning); 
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.3); 
-        }
+        .footer { grid-column: 1/3; background: #2c3e50; color: white; display: flex; align-items: center; justify-content: space-between; font-size: 11px; padding: 5px 20px; position: relative; min-height: 75px; border-top: 3px solid #f39c12; box-shadow: 0 -4px 15px rgba(0,0,0,0.4); }
         .footer-section { display: flex; align-items: center; gap: 12px; }
         .footer-left { flex: 1; justify-content: flex-start; }
-        .footer-center { flex: 0; justify-content: center; min-width: 350px; transition: var(--transition-smooth); }
+        .footer-center { flex: 0; justify-content: center; min-width: 350px; }
         .footer-right { flex: 1; justify-content: flex-end; align-items: center; gap: 15px; }
         
-        .version-tag { color: #f1c40f; font-weight: bold; font-family: monospace; letter-spacing: 1px; font-size: 13px; }
-        .footer .btn { padding: 5px 12px; font-size: 12px; min-width: 60px; border-radius: var(--border-radius-sm); border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.08); color: white; }
-        .footer .btn:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.2); }
+        .version-tag { color: #f1c40f; font-weight: bold; font-family: monospace; letter-spacing: 1px; font-size: 13px; margin-bottom: 3px; }
+        .footer .btn { padding: 4px 10px; font-size: 12px; min-width: 60px; border-radius: 5px; }
         
-        .day-switcher { display: flex; gap: 6px; align-items: center; }
-        .day-btn { background: #2c3e50; color: #bdc3c7; border: 1px solid #2c3e50; padding: 8px 16px; cursor: pointer; font-size: 13px; transition: var(--transition-smooth); border-radius: 8px; white-space: nowrap; font-weight: 600; }
-        .day-btn:hover { background: #34495e; color: white; }
-        .day-btn.active { background: var(--warning); color: #1e272e; border-color: var(--warning); font-weight: bold; transform: scale(1.05); box-shadow: 0 0 12px rgba(243,156,18,0.4); }
-        .day-btn-copy { background: #6c5ce7; color: #ecf0f1; border-color: #6c5ce7; }
-        .day-btn-copy:hover { background: #8275e9; color: white; }
+        .day-switcher { display: flex; gap: 5px; align-items: center; }
+        .day-btn { background: #34495e; color: #bdc3c7; border: 1px solid #34495e; padding: 10px 18px; cursor: pointer; font-size: 13px; transition: 0.3s; border-radius: 8px; white-space: nowrap; }
+        .day-btn:hover { background: #4b6584; color: white; }
+        .day-btn.active { background: #f39c12; color: #fff; border-color: #f39c12; font-weight: bold; transform: scale(1.05); box-shadow: 0 0 10px rgba(243,156,18,0.5); }
+        .day-btn-copy { background: #6c5ce7; color: #ecf0f1; border-color: #6c5ce7; font-weight: bold; }
+        .day-btn-copy:hover { background: #a29bfe; color: white; }
 
         .footer-link { color: #ecf0f1; text-decoration: none; border-bottom: 1px dashed #7f8c8d; transition: all 0.3s; }
-        .footer-link:hover { color: var(--warning); border-bottom: 1px solid var(--warning); }
+        .footer-link:hover { color: #f1c40f; border-bottom: 1px solid #f1c40f; }
     </style>
+    <script src="https://apis.google.com/js/api.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
 <body id="main-body">
 
 <div id="mobile-clock-header">00:00:00</div>
@@ -308,8 +179,6 @@
             <button class="btn" onclick="window.changeFontSize(2)">A+</button>
             <button class="btn" onclick="window.changeFontSize(-2)">A-</button>
             <button class="btn" onclick="window.openBgMenu('left', event)">🎨背景</button>
-            <button class="btn" id="btn-toggle-footer" onclick="window.toggleFooter()">📂隱藏下方控制列</button>
-            <button class="btn" id="btn-toggle-right-panel" onclick="window.toggleRightPanel()">🖥️隱藏右方欄</button>
             <button class="btn btn-lock" id="btn-lock" onclick="window.toggleLock()">🔓 解鎖中</button>
             <input type="file" id="import-file" style="display:none" onchange="window.importFromJSON(this)">
         </div>
@@ -331,11 +200,6 @@
             <button class="btn" style="border: 1px solid #333; background:#555; color:white;" onclick="createWidget('traffic')">🚥紅綠燈</button>
             <button class="btn btn-picker" onclick="createWidget('picker')">🎲抽籤</button>
             <button class="btn" onclick="openBgMenu('right', event)">🎨背景</button>
-            <button class="btn" id="btn-toggle-left-panel" onclick="window.toggleLeftPanel()">🖥️隱藏左方欄</button>
-            <span style="margin: 0 4px; color: rgba(0,0,0,0.15);">|</span>
-            <button class="btn" id="btn-toggle-time" onclick="window.toggleWidgetCategory('time')" style="background: rgba(108,92,231,0.08); border-color: rgba(108,92,231,0.2); color: var(--primary);">👁️ 時間</button>
-            <button class="btn" id="btn-toggle-note" onclick="window.toggleWidgetCategory('note')" style="background: rgba(39,174,96,0.08); border-color: rgba(39,174,96,0.2); color: #27ae60;">👁️ 白板</button>
-            <button class="btn" id="btn-toggle-announce" onclick="window.toggleWidgetCategory('announce')" style="background: rgba(231,76,60,0.08); border-color: rgba(231,76,60,0.2); color: #e74c3c;">👁️ 聯絡簿</button>
         </div>
     </main>
 
@@ -367,7 +231,7 @@
         <div class="footer-section footer-left">
             <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 2px;">
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <span class="version-tag">v.6.1 Premium Cloud</span>
+                    <span class="version-tag">v.5.2 Cloud Sync</span>
                     <button class="btn" style="background:#8e44ad; color:white; border:none; padding:2px 6px; font-size:11px;" onclick="document.getElementById('instruction-modal').style.display='flex'">📖操作說明</button>
                 </div>
                 <div style="display: flex; gap: 4px;">
@@ -401,7 +265,6 @@
                      data-auto_prompt="false">
                 </div>
                 <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="signin_with" data-size="small" data-logo_alignment="left"></div>
-                <button class="btn btn-sm" id="btn-google-logout" onclick="window.logoutGoogle()" style="display: none; background: #e74c3c; color: white; border: none; width: auto; height: auto; padding: 4px 10px; font-size: 11px;">🚪 登出 Google</button>
                 
                 <div style="font-size: 12px; line-height: 1.4; text-align: right;">
                     <span id="top-display-id" style="font-weight: bold; color: #f1c40f;">ID: 本機存檔</span> | 
@@ -425,22 +288,15 @@
     var currentDay = 1;
     var allDaysData = { 1: null, 2: null, 3: null };
     
-    // --- 雲端同步與 V6.0 控制變數 ---
+    // --- 雲端同步變數 ---
+    var gapiInited = false;
     var gisInited = false;
     var tokenClient;
     var cloudFileId = null; // 儲存在 Google Drive 的檔案 ID
     var accessToken = null;
 
-    window.footerVisible = true; // 預設顯示下方控制欄
-    window.leftPanelVisible = true; // 預設顯示左方段考表格欄
-    window.rightPanelVisible = true; // 預設顯示右方小工具欄
-    window.categoryHiddenStates = {
-        time: false,
-        note: false,
-        announce: false
-    };
-
     // --- 1. 初始化與儲存邏輯 ---
+    // 先定義自動存檔函數，確保初始化時可用
     window.triggerAutoSave = function() {
         if (isLocked) return;
         clearTimeout(window.saveTimer);
@@ -482,79 +338,27 @@
         // 監聽選擇/顏色變更
         container.addEventListener('change', window.triggerAutoSave);
 
-        // 初始化 Google Identity Services
+        // 初始化 Google API
         try {
-            initializeGisClient();
-        } catch(e) { console.error("GIS load failed", e); }
+            gapi.load('client', initializeGapiClient);
+        } catch(e) { console.error("GAPI load failed", e); }
     };
 
-    function initializeGisClient() {
-        if (typeof google !== 'undefined' && google.accounts && google.accounts.oauth2) {
-            tokenClient = google.accounts.oauth2.initTokenClient({
-                client_id: CLIENT_ID,
-                scope: SCOPES,
-                callback: '', // 後續在授權時動態處理
-            });
-            gisInited = true;
-            console.log("GIS Token Client initialized");
-            
-            // 檢查本地是否已經有 token
-            var savedToken = localStorage.getItem('google_access_token');
-            if (savedToken) {
-                accessToken = savedToken;
-                var status = document.getElementById('cloud-status');
-                if (status) {
-                    status.style.display = 'block';
-                    status.style.background = 'rgba(0,0,0,0.4)';
-                    status.style.color = '#f39c12';
-                    status.innerText = '☁️ 雲端同步已開啟';
-                }
-                checkCloudFileId();
-            }
-        } else {
-            setTimeout(initializeGisClient, 500);
-        }
-    }
-
-    async function checkCloudFileId() {
-        if (!accessToken) return;
-        try {
-            let listUrl = 'https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&fields=files(id,name)&pageSize=1';
-            let listResp = await fetch(listUrl, {
-                headers: { 'Authorization': 'Bearer ' + accessToken }
-            });
-            if (listResp.status === 401) {
-                handleTokenExpired();
-                return;
-            }
-            let listData = await listResp.json();
-            let files = listData.files;
-            if (files && files.length > 0) {
-                cloudFileId = files[0].id;
-                console.log("Found cloud file ID:", cloudFileId);
-            }
-        } catch(e) {
-            console.error("checkCloudFileId error:", e);
-        }
-    }
-
-    function handleTokenExpired() {
-        accessToken = null;
-        cloudFileId = null;
-        localStorage.removeItem('google_access_token');
-        var status = document.getElementById('cloud-status');
-        if (status) {
-            status.style.background = '#e67e22';
-            status.style.color = '#fff';
-            status.innerText = '☁️ 點擊啟用雲端同步';
-        }
-        currentUser = { id: '本機用戶', email: '' };
-        document.getElementById('display-id').innerText = '---';
-        document.getElementById('top-display-id').innerText = 'ID: 本機存檔';
-        var logoutBtn = document.getElementById('btn-google-logout');
-        if (logoutBtn) logoutBtn.style.display = 'none';
-        var signinBtn = document.querySelector('.g_id_signin');
-        if (signinBtn) signinBtn.style.display = 'block';
+    /** 初始化 GAPI 客戶端 (Drive API) */
+    async function initializeGapiClient() {
+        await gapi.client.init({
+            discoveryDocs: [DISCOVERY_DOC],
+        });
+        gapiInited = true;
+        console.log("GAPI initialized");
+        
+        // 初始化 GIS Token Client 用於取得存取權限 (Drive)
+        tokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: CLIENT_ID,
+            scope: SCOPES,
+            callback: '', // 後續在授權時動態處理
+        });
+        gisInited = true;
     }
 
     window.saveToLocalStorage = function() {
@@ -564,153 +368,11 @@
             lastActiveDay: currentDay,
             days: allDaysData,
             user: currentUser,
-            version: 'v.6.0',
-            footerVisible: window.footerVisible,
-            leftPanelVisible: window.leftPanelVisible,
-            rightPanelVisible: window.rightPanelVisible,
-            categoryHiddenStates: window.categoryHiddenStates
+            version: 'v.5.1'
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(pack));
         console.log('Data saved to localStorage');
     };
-
-    function applyFooterVisibility() {
-        var footer = document.querySelector('footer.footer');
-        var btn = document.getElementById('btn-toggle-footer');
-        if (window.footerVisible) {
-            if (footer) footer.style.display = 'flex';
-            if (btn) {
-                btn.innerText = '📂隱藏下方控制列';
-                btn.style.background = '';
-                btn.style.color = '';
-            }
-        } else {
-            if (footer) footer.style.display = 'none';
-            if (btn) {
-                btn.innerText = '📂顯示下方控制列';
-                btn.style.background = 'rgba(108,92,231,0.1)';
-                btn.style.color = 'var(--primary)';
-            }
-        }
-    }
-
-    window.toggleFooter = function() {
-        window.footerVisible = !window.footerVisible;
-        applyFooterVisibility();
-        window.saveToLocalStorage();
-        if(accessToken) window.syncToCloud();
-    };
-
-    function applyPanelVisibilities() {
-        var left = document.getElementById('left-panel');
-        var right = document.getElementById('right-panel');
-        var container = document.querySelector('.dashboard-container');
-        
-        var btnToggleRight = document.getElementById('btn-toggle-right-panel');
-        var btnToggleLeft = document.getElementById('btn-toggle-left-panel');
-
-        // Apply Left Panel
-        if (window.leftPanelVisible) {
-            if (left) left.style.display = '';
-            if (btnToggleLeft) {
-                btnToggleLeft.innerText = '🖥️隱藏左方欄';
-                btnToggleLeft.style.background = '';
-                btnToggleLeft.style.color = '';
-            }
-        } else {
-            if (left) left.style.display = 'none';
-            if (btnToggleLeft) {
-                btnToggleLeft.innerText = '🖥️顯示左方欄';
-                btnToggleLeft.style.background = 'rgba(108,92,231,0.1)';
-                btnToggleLeft.style.color = 'var(--primary)';
-            }
-        }
-
-        // Apply Right Panel
-        if (window.rightPanelVisible) {
-            if (right) right.style.display = '';
-            if (btnToggleRight) {
-                btnToggleRight.innerText = '🖥️隱藏右方欄';
-                btnToggleRight.style.background = '';
-                btnToggleRight.style.color = '';
-            }
-        } else {
-            if (right) right.style.display = 'none';
-            if (btnToggleRight) {
-                btnToggleRight.innerText = '🖥️顯示右方欄';
-                btnToggleRight.style.background = 'rgba(108,92,231,0.1)';
-                btnToggleRight.style.color = 'var(--primary)';
-            }
-        }
-
-        // Adjust Grid layout columns dynamically
-        if (window.leftPanelVisible && window.rightPanelVisible) {
-            container.style.gridTemplateColumns = '50% 50%';
-        } else {
-            // When either left or right is display: none, the remaining one occupies the single 100% track!
-            container.style.gridTemplateColumns = '100%';
-        }
-    }
-
-    window.toggleLeftPanel = function() {
-        window.leftPanelVisible = !window.leftPanelVisible;
-        if (!window.leftPanelVisible && !window.rightPanelVisible) {
-            window.rightPanelVisible = true;
-        }
-        applyPanelVisibilities();
-        window.saveToLocalStorage();
-        if(accessToken) window.syncToCloud();
-    };
-
-    window.toggleRightPanel = function() {
-        window.rightPanelVisible = !window.rightPanelVisible;
-        if (!window.leftPanelVisible && !window.rightPanelVisible) {
-            window.leftPanelVisible = true;
-        }
-        applyPanelVisibilities();
-        window.saveToLocalStorage();
-        if(accessToken) window.syncToCloud();
-    };
-
-    window.toggleWidgetCategory = function(category) {
-        window.categoryHiddenStates[category] = !window.categoryHiddenStates[category];
-        applyWidgetCategoryVisibility(category);
-        window.saveToLocalStorage();
-        if (accessToken) window.syncToCloud();
-    };
-
-    function applyWidgetCategoryVisibility(category) {
-        var isHidden = window.categoryHiddenStates[category];
-        var btn = document.getElementById('btn-toggle-' + category);
-        if (btn) {
-            if (isHidden) {
-                btn.classList.add('active-hidden');
-                btn.innerText = '🙈 ' + (category === 'time' ? '時間' : (category === 'note' ? '白板' : '聯絡簿'));
-            } else {
-                btn.classList.remove('active-hidden');
-                btn.innerText = '👁️ ' + (category === 'time' ? '時間' : (category === 'note' ? '白板' : '聯絡簿'));
-            }
-        }
-
-        document.querySelectorAll('.widget').forEach(w => {
-            var isTarget = false;
-            if (category === 'time' && (w.classList.contains('widget-digital') || w.classList.contains('widget-analog'))) {
-                isTarget = true;
-            } else if (category === 'note' && w.classList.contains('widget-note')) {
-                isTarget = true;
-            } else if (category === 'announce' && w.classList.contains('widget-announce')) {
-                isTarget = true;
-            }
-
-            if (isTarget) {
-                if (isHidden) {
-                    w.classList.add('category-hidden');
-                } else {
-                    w.classList.remove('category-hidden');
-                }
-            }
-        });
-    }
 
     window.loadFromLocalStorage = function() {
         const saved = localStorage.getItem(STORAGE_KEY);
@@ -721,42 +383,8 @@
                     allDaysData = parsed.days;
                     currentUser = parsed.user || currentUser;
                     document.getElementById('display-id').innerText = currentUser.id;
-                    if (currentUser.email) {
-                        document.getElementById('top-display-id').innerText = currentUser.email;
-                        var signinBtn = document.querySelector('.g_id_signin');
-                        if (signinBtn) signinBtn.style.display = 'none';
-                        var logoutBtn = document.getElementById('btn-google-logout');
-                        if (logoutBtn) logoutBtn.style.display = 'block';
-                    }
+                    if (currentUser.email) document.getElementById('top-display-id').innerText = currentUser.email;
                     
-                    if (typeof parsed.footerVisible !== 'undefined') {
-                        window.footerVisible = parsed.footerVisible;
-                    } else if (typeof parsed.daySwitcherVisible !== 'undefined') {
-                        window.footerVisible = parsed.daySwitcherVisible;
-                    } else {
-                        window.footerVisible = true;
-                    }
-                    applyFooterVisibility();
-
-                    if (typeof parsed.leftPanelVisible !== 'undefined') {
-                        window.leftPanelVisible = parsed.leftPanelVisible;
-                    } else {
-                        window.leftPanelVisible = true;
-                    }
-                    if (typeof parsed.rightPanelVisible !== 'undefined') {
-                        window.rightPanelVisible = parsed.rightPanelVisible;
-                    } else {
-                        window.rightPanelVisible = true;
-                    }
-                    applyPanelVisibilities();
-
-                    if (parsed.categoryHiddenStates) {
-                        window.categoryHiddenStates = parsed.categoryHiddenStates;
-                    }
-                    applyWidgetCategoryVisibility('time');
-                    applyWidgetCategoryVisibility('note');
-                    applyWidgetCategoryVisibility('announce');
-
                     const savedDay = parsed.lastActiveDay || 1;
                     window.switchDay(savedDay, true);
                 }
@@ -795,38 +423,11 @@
         currentUser.email = profile.email;
         document.getElementById('display-id').innerText = profile.name;
         document.getElementById('top-display-id').innerText = profile.email;
-        
-        var signinBtn = document.querySelector('.g_id_signin');
-        if (signinBtn) signinBtn.style.display = 'none';
-        var logoutBtn = document.getElementById('btn-google-logout');
-        if (logoutBtn) logoutBtn.style.display = 'block';
-
         alert("Google 登入成功：" + profile.name + "\n接下來將嘗試啟用雲端同步...");
         
         window.saveToLocalStorage();
+        // 請求 Drive 權限
         window.requestDrivePermission();
-    };
-
-    window.logoutGoogle = function() {
-        if (confirm("確定要登出 Google 帳號嗎？\n(登出後將切換為本機存檔模式)")) {
-            accessToken = null;
-            cloudFileId = null;
-            localStorage.removeItem('google_access_token');
-            currentUser = { id: '本機用戶', email: '' };
-            document.getElementById('display-id').innerText = '---';
-            document.getElementById('top-display-id').innerText = 'ID: 本機存檔';
-            
-            var logoutBtn = document.getElementById('btn-google-logout');
-            if (logoutBtn) logoutBtn.style.display = 'none';
-            var signinBtn = document.querySelector('.g_id_signin');
-            if (signinBtn) signinBtn.style.display = 'block';
-            
-            var status = document.getElementById('cloud-status');
-            if (status) {
-                status.style.display = 'none';
-            }
-            alert("已成功登出 Google 帳號。");
-        }
     };
 
     /** 請求 Google Drive 權限 */
@@ -835,7 +436,6 @@
         tokenClient.callback = async (resp) => {
             if (resp.error !== undefined) { throw (resp); }
             accessToken = resp.access_token;
-            localStorage.setItem('google_access_token', accessToken);
             console.log("Access Token acquired");
             document.getElementById('cloud-status').style.display = 'block';
             document.getElementById('cloud-status').innerText = '☁️ 雲端同步已開啟';
@@ -846,164 +446,65 @@
 
     /** 從 Google Drive 載入 */
     window.loadFromCloud = async function() {
-        if (!accessToken) return;
         try {
             var status = document.getElementById('cloud-status');
-            status.style.display = 'block';
             status.style.background = 'rgba(0,0,0,0.4)';
             status.style.color = '#f39c12';
             status.innerText = '☁️ 正在下載雲端備份...';
-            
-            let listUrl = 'https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&fields=files(id, name)&pageSize=1';
-            let listResp = await fetch(listUrl, {
-                headers: { 'Authorization': 'Bearer ' + accessToken }
+            const response = await gapi.client.drive.files.list({
+                spaces: 'appDataFolder',
+                fields: 'files(id, name)',
+                pageSize: 1
             });
-            
-            if (listResp.status === 401) {
-                handleTokenExpired();
-                return;
-            }
-            
-            const listData = await listResp.json();
-            const files = listData.files;
-            if (files && files.length > 0) {
+            const files = response.result.files;
+            if (files.length > 0) {
                 cloudFileId = files[0].id;
-                let getUrl = `https://www.googleapis.com/drive/v3/files/${cloudFileId}?alt=media`;
-                let getResp = await fetch(getUrl, {
-                    headers: { 'Authorization': 'Bearer ' + accessToken }
-                });
-                const cloudData = await getResp.json();
+                const fileContent = await gapi.client.drive.files.get({ fileId: cloudFileId, alt: 'media' });
+                const cloudData = fileContent.result;
                 if(cloudData && cloudData.days) {
                     if (confirm("發現雲端有備份存檔，是否要將「雲端資料」下載並覆蓋目前的本機資料？")) {
                         allDaysData = cloudData.days;
                         currentUser = cloudData.user || currentUser;
-                        
-                        if (typeof cloudData.footerVisible !== 'undefined') {
-                            window.footerVisible = cloudData.footerVisible;
-                            applyFooterVisibility();
-                        } else if (typeof cloudData.daySwitcherVisible !== 'undefined') {
-                            window.footerVisible = cloudData.daySwitcherVisible;
-                            applyFooterVisibility();
-                        }
-                        if (typeof cloudData.leftPanelVisible !== 'undefined') {
-                            window.leftPanelVisible = cloudData.leftPanelVisible;
-                        }
-                        if (typeof cloudData.rightPanelVisible !== 'undefined') {
-                            window.rightPanelVisible = cloudData.rightPanelVisible;
-                        }
-                        applyPanelVisibilities();
-                        if (cloudData.categoryHiddenStates) {
-                            window.categoryHiddenStates = cloudData.categoryHiddenStates;
-                            applyWidgetCategoryVisibility('time');
-                            applyWidgetCategoryVisibility('note');
-                            applyWidgetCategoryVisibility('announce');
-                        }
-                        
                         window.switchDay(cloudData.lastActiveDay || 1, true);
                         window.saveToLocalStorage();
                     }
                 }
             } else {
-                await window.syncToCloud();
+                window.syncToCloud();
             }
-        } catch (err) { 
-            console.error("Cloud load error:", err); 
-        } finally { 
-            var status = document.getElementById('cloud-status');
-            if (status && accessToken) {
-                status.innerText = '☁️ 雲端連線正常'; 
-                status.style.background = 'rgba(0,0,0,0.4)';
-                status.style.color = '#f39c12';
-            }
-        }
+        } catch (err) { console.error("Cloud load error:", err); }
+        finally { document.getElementById('cloud-status').innerText = '☁️ 雲端連線正常'; }
     };
 
     /** 同步上傳至 Google Drive */
     window.syncToCloud = async function() {
         if (!accessToken) return;
         try {
-            var status = document.getElementById('cloud-status');
-            status.style.display = 'block';
-            status.style.background = 'rgba(0,0,0,0.4)';
-            status.style.color = '#f39c12';
-            status.innerText = '☁️ 正在同步至雲端...';
-            
-            const pack = { 
-                multiDay: true, 
-                lastActiveDay: currentDay, 
-                days: allDaysData, 
-                user: currentUser, 
-                version: 'v.6.0', 
-                footerVisible: window.footerVisible,
-                leftPanelVisible: window.leftPanelVisible,
-                rightPanelVisible: window.rightPanelVisible,
-                categoryHiddenStates: window.categoryHiddenStates,
-                syncTime: new Date().toISOString() 
-            };
+            document.getElementById('cloud-status').style.display = 'block';
+            document.getElementById('cloud-status').innerText = '☁️ 正在同步至雲端...';
+            const pack = { multiDay: true, lastActiveDay: currentDay, days: allDaysData, user: currentUser, version: 'v.5.1', syncTime: new Date().toISOString() };
             const content = JSON.stringify(pack);
-            
             if (cloudFileId) {
-                let updateUrl = `https://www.googleapis.com/upload/drive/v3/files/${cloudFileId}?uploadType=media`;
-                let updateResp = await fetch(updateUrl, {
-                    method: 'PATCH',
-                    headers: {
-                        'Authorization': 'Bearer ' + accessToken,
-                        'Content-Type': 'application/json'
-                    },
-                    body: content
-                });
-                
-                if (updateResp.status === 401) {
-                    handleTokenExpired();
-                    return;
-                }
+                await gapi.client.request({ path: '/upload/drive/v3/files/' + cloudFileId, method: 'PATCH', params: {uploadType: 'media'}, body: content });
             } else {
-                let createUrl = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
-                const metadata = { 
-                    name: 'exam_timetable_v6.json', 
-                    parents: ['appDataFolder'], 
-                    mimeType: 'application/json' 
-                };
-                
+                const metadata = { name: 'exam_timetable_v5.json', parents: ['appDataFolder'], mimeType: 'application/json' };
                 const boundary = '-------314159265358979323846';
                 const delimiter = "\r\n--" + boundary + "\r\n";
                 const close_delim = "\r\n--" + boundary + "--";
-                const multipartRequestBody = 
-                    delimiter + 'Content-Type: application/json; charset=UTF-8\r\n\r\n' + JSON.stringify(metadata) + 
-                    delimiter + 'Content-Type: application/json; charset=UTF-8\r\n\r\n' + content + 
-                    close_delim;
-                
-                let createResp = await fetch(createUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': 'Bearer ' + accessToken,
-                        'Content-Type': 'multipart/related; boundary="' + boundary + '"'
-                    },
-                    body: multipartRequestBody
-                });
-                
-                if (createResp.status === 401) {
-                    handleTokenExpired();
-                    return;
-                }
-                
-                const createData = await createResp.json();
-                cloudFileId = createData.id;
+                const multipartRequestBody = delimiter + 'Content-Type: application/json\r\n\r\n' + JSON.stringify(metadata) + delimiter + 'Content-Type: application/json\r\n\r\n' + content + close_delim;
+                const response = await gapi.client.request({ 'path': '/upload/drive/v3/files', 'method': 'POST', 'params': {'uploadType': 'multipart'}, 'headers': {'Content-Type': 'multipart/related; boundary="' + boundary + '"'}, 'body': multipartRequestBody });
+                cloudFileId = response.result.id;
             }
-            
             var status = document.getElementById('cloud-status');
             status.style.background = 'rgba(0,0,0,0.4)';
             status.style.color = '#f39c12';
             status.innerText = '☁️ 雲端同步成功';
             setTimeout(() => { if(accessToken) status.innerText = '☁️ 雲端連線正常'; }, 3000);
         } catch (err) { 
-            console.error("Cloud sync error:", err);
             var status = document.getElementById('cloud-status');
-            if (status) {
-                status.style.background = '#e74c3c';
-                status.style.color = '#fff';
-                status.innerText = '⚠️ 雲端同步失敗'; 
-            }
+            status.style.background = '#e74c3c';
+            status.style.color = '#fff';
+            status.innerText = '⚠️ 雲端同步失敗'; 
         }
     };
 
@@ -1121,8 +622,7 @@
                 content: (type === 'note' || type === 'announce') ? w.querySelector('textarea').value : '',
                 fontSize: (type === 'note' || type === 'announce') ? w.querySelector('textarea').style.fontSize : '',
                 extra: extra,
-                hacker: w.classList.contains('style-hacker'),
-                collapsed: w.classList.contains('collapsed')
+                hacker: w.classList.contains('style-hacker')
             });
         });
 
@@ -1136,11 +636,7 @@
             tableFontSize: document.getElementById('exam-table').style.fontSize,
             table: tableData,
             widgets: widgetsData,
-            isLocked: isLocked,
-            footerVisible: window.footerVisible,
-            leftPanelVisible: window.leftPanelVisible,
-            rightPanelVisible: window.rightPanelVisible,
-            categoryHiddenStates: window.categoryHiddenStates
+            isLocked: isLocked
         };
     };
 
@@ -1166,36 +662,6 @@
         document.getElementById('exam-table').style.fontSize = data.tableFontSize || "16px";
         if (data.colWidths) data.colWidths.forEach(function(w, i) { if(w) document.getElementById('th-' + (i+1)).style.width = w; });
         
-        if (typeof data.footerVisible !== 'undefined') {
-            window.footerVisible = data.footerVisible;
-        } else if (typeof data.daySwitcherVisible !== 'undefined') {
-            window.footerVisible = data.daySwitcherVisible;
-        } else {
-            window.footerVisible = true;
-        }
-        applyFooterVisibility();
-
-        if (typeof data.leftPanelVisible !== 'undefined') {
-            window.leftPanelVisible = data.leftPanelVisible;
-        } else {
-            window.leftPanelVisible = true;
-        }
-        if (typeof data.rightPanelVisible !== 'undefined') {
-            window.rightPanelVisible = data.rightPanelVisible;
-        } else {
-            window.rightPanelVisible = true;
-        }
-        applyPanelVisibilities();
-
-        if (data.categoryHiddenStates) {
-            window.categoryHiddenStates = data.categoryHiddenStates;
-        } else {
-            window.categoryHiddenStates = { time: false, note: false, announce: false };
-        }
-        applyWidgetCategoryVisibility('time');
-        applyWidgetCategoryVisibility('note');
-        applyWidgetCategoryVisibility('announce');
-
         document.getElementById('exam-tbody').innerHTML = "";
         
         if(data.table) data.table.forEach(function(item) { window.addTableRow(item); });
@@ -1279,20 +745,6 @@
     };
 
     // --- 4. 小工具 ---
-    window.toggleWidgetCollapse = function(btn, e) {
-        if (isLocked) return;
-        var w = btn.closest('.widget');
-        if (w.classList.contains('collapsed')) {
-            w.classList.remove('collapsed');
-            btn.innerText = '➖';
-        } else {
-            w.classList.add('collapsed');
-            btn.innerText = '➕';
-        }
-        e.stopPropagation();
-        window.triggerAutoSave();
-    };
-
     function createWidget(type, data, styleType) {
         if (type === 'digital' && styleType === 'default') { if (document.querySelectorAll('.widget-digital:not(.style-hacker)').length >= 1) return alert("白色數位時鐘只能 1 個"); }
         if (type === 'digital' && styleType === 'hacker') { if (document.querySelectorAll('.style-hacker').length >= 1) return alert("駭客數位時鐘只能 1 個"); }
@@ -1318,14 +770,13 @@
              else { w.style.width='220px'; w.style.height='220px'; }
         }
 
-        var collapseText = (data && data.collapsed) ? '➕' : '➖';
-        var html = '<div class="widget-handle"></div><div class="widget-ctrl">';
-        html += '<button class="btn-collapse" onclick="window.toggleWidgetCollapse(this, event)">' + collapseText + '</button>';
-
-        if (type === 'announce' || type === 'note') { 
-            html += '<button class="btn-widget" onclick="window.zoomText(this, 2)">A+</button><button class="btn-widget" onclick="window.zoomText(this, -2)">A-</button>'; 
-        }
-        html += '<button class="btn-close" onclick="this.closest(\'.widget\').remove(); window.triggerAutoSave();">×</button></div>';
+       var html = '<div class="widget-handle"></div><div class="widget-ctrl">';
+// ↓↓↓ 修改這一行，加上 || type === 'note' ↓↓↓
+if (type === 'announce' || type === 'note') { 
+    html += '<button class="btn-widget" onclick="window.zoomText(this, 2)">A+</button><button class="btn-widget" onclick="window.zoomText(this, -2)">A-</button>'; 
+}
+// ↑↑↑ 修改結束 ↑↑↑
+html += '<button class="btn-close" onclick="this.closest(\'.widget\').remove(); window.triggerAutoSave();">×</button></div>';
         
         if (type === 'digital') {
             html += '<div class="clock-digit">00:00:00</div>';
@@ -1355,20 +806,6 @@
                     '<button class="btn-draw" onclick="window.runPicker(this)">抽!</button>';
         }
         w.innerHTML = html; board.appendChild(w); makeDraggable(w);
-        
-        if (data && data.collapsed) {
-            w.classList.add('collapsed');
-        }
-
-        // 根據當前分類隱藏狀態套用
-        if (type === 'digital' || type === 'analog') {
-            if (window.categoryHiddenStates['time']) w.classList.add('category-hidden');
-        } else if (type === 'note') {
-            if (window.categoryHiddenStates['note']) w.classList.add('category-hidden');
-        } else if (type === 'announce') {
-            if (window.categoryHiddenStates['announce']) w.classList.add('category-hidden');
-        }
-
         window.triggerAutoSave();
 
         if (type === 'traffic' && data && data.extra) {
@@ -1497,9 +934,11 @@
 	
 	// --- 超簡單：能量條開關 ---
     window.toggleEnergy = function() {
+        // 抓出表格裡的第 3 欄 (包含標題列和資料列)
         var cells = document.querySelectorAll('#exam-table th:nth-child(3), #exam-table td:nth-child(3)');
         
         cells.forEach(function(cell) {
+            // 如果目前是隱藏的，就顯示出來；如果是顯示的，就隱藏起來
             if (cell.style.display === 'none') {
                 cell.style.display = '';
             } else {
@@ -1511,29 +950,31 @@
 </script>
 
 <!-- 操作說明 Modal -->
-<div id="instruction-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.65); backdrop-filter: blur(8px); z-index:10000; justify-content:center; align-items:center;">
-    <div style="background:#fff; width:90%; max-width:650px; padding:30px; border-radius:16px; position:relative; max-height:85vh; overflow-y:auto; color:#2c3e50; box-shadow:0 20px 50px rgba(0,0,0,0.3); font-family:inherit;">
-        <button onclick="document.getElementById('instruction-modal').style.display='none';" style="position:absolute; top:15px; right:15px; background:#ff5f56; color:white; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; font-weight:bold; font-size:16px; display:flex; align-items:center; justify-content:center;">×</button>
-        <h2 style="margin-bottom:20px; color:#6c5ce7; border-bottom:2px solid #f1f3f5; padding-bottom:10px; font-weight:800; display:flex; align-items:center; gap:8px;">📖 雲端同步與操作說明 (v.6.0 Premium)</h2>
+<div id="instruction-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10000; justify-content:center; align-items:center;">
+    <div style="background:#fff; width:90%; max-width:600px; padding:30px; border-radius:12px; position:relative; max-height:80vh; overflow-y:auto; color:#333; box-shadow:0 10px 30px rgba(0,0,0,0.3); font-family:'Microsoft JhengHei',sans-serif;">
+        <button onclick="document.getElementById('instruction-modal').style.display='none';" style="position:absolute; top:15px; right:15px; background:#e74c3c; color:white; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; font-weight:bold; font-size:16px;">×</button>
+        <h2 style="margin-bottom:20px; color:#2c3e50; border-bottom:2px solid #ecf0f1; padding-bottom:10px;">📖 雲端同步與操作說明 (v.5.2)</h2>
         
-        <h3 style="color:#6c5ce7; margin-top:15px; font-size:17px; font-weight:700;">🔄 Google 雲端極速同步</h3>
-        <p style="font-size:14px; color:#57606f; margin-bottom:10px;">系統內建基於 Google Drive 的備份機制，支援無感極速跨裝置自動同步資料。</p>
-        <ol style="padding-left:20px; line-height:1.6; font-size:14px; color:#2c3e50;">
-            <li><b>登入帳號</b>：點擊右下角 Google 登入。成功後可透過下方<b>「🚪 登出 Google」</b>隨時退出並切換為本機模式。</li>
-            <li><b>雲端權限</b>：登入後，請務必勾選<b>「查看並管理其在您 Google 雲端硬碟中的專用設定數據」</b>，以允許同步存檔。</li>
-            <li><b>即時存檔</b>：設定完成後，修改科目、移動時鐘、折疊工具等操作皆會<b>自動秒級同步</b>至雲端，無需頻繁點擊「💾存檔」。</li>
+        <h3 style="color:#2980b9; margin-top:15px; font-size:18px;">🔄 雲端同步設定 (必讀)</h3>
+        <p style="font-size:14px; color:#7f8c8d; margin-bottom:10px;">系統內建基於 Google Drive 的備份機制，讓您跨裝置自動同步資料。</p>
+        <ol style="padding-left:20px; line-height:1.6; font-size:14px; color:#333;">
+            <li><b>登入帳號</b>：點擊右下角的 <b>Google 登入按鈕</b>。</li>
+            <li><b>關鍵授權 (必做)</b>：登入後，系統會彈出權限請求視窗。請務必勾選<b>「查看並管理其在您 Google 雲端硬碟中的專用設定數據」</b>，並點擊繼續。</li>
+            <li><b>自動存檔</b>：授權完成後，未來只要修改科目、移動時鐘，都會自動上傳雲端。<br>若看到 <span style="background:#e67e22; color:white; padding:2px 6px; border-radius:5px; font-size:10px; cursor:pointer;">☁️ 點擊啟用雲端同步</span>，代表您可以隨時點擊它來重新授權並啟動同步。</li>
+            <li><b>跨裝置同步</b>：換另一台電腦時，只要用同一個 Google 帳號登入，系統檢查到雲端資料比本地新，就會詢問您是否要覆蓋載入。</li>
         </ol>
         
-        <h3 style="color:#6c5ce7; margin-top:20px; font-size:17px; font-weight:700;">📌 V6.0 核心升級功能</h3>
-        <ul style="padding-left:20px; line-height:1.6; font-size:14px; color:#2c3e50;">
-            <li><b>📅 天數列折疊</b>：點擊左側工具列<b>「📅隱藏天數列」</b>，可收納最底部的「第一天、第二天...」按鈕，騰出大螢幕視覺空間，狀態會自動儲存。</li>
-            <li><b>👁️ 右側分類隱藏</b>：右側工具列上方新增<b>「👁️時間」、「👁️白板」、「👁️聯絡簿」</b>三個開關，可一鍵分類全部小工具的顯示或隱藏。</li>
-            <li><b>➖ 獨立摺疊按鈕</b>：每個小工具右上角新增<b>「➖折疊」</b>按鈕，點擊可部分隱藏（折疊成 35px 高度把手），且折疊狀態會同步保留。</li>
-            <li><b>💎 質感磨砂 UI</b>：全介面套用 Outfit 與 Noto Fonts 現代字型，小工具支援優雅的 Glassmorphism 玻璃磨砂感，提升視覺享受。</li>
+        <h3 style="color:#2980b9; margin-top:20px; font-size:18px;">📌 核心操作教學</h3>
+        <ul style="padding-left:20px; line-height:1.6; font-size:14px; color:#333;">
+            <li><b>編輯與新增</b>：點擊左側「+新增」增加一列。直接點擊表格內容即可編輯，右側有調色盤可以換字的顏色。</li>
+            <li><b>複製內容</b>：善用底部「📥複製第1天」，能把第一天的內容（包含背景顏色）快速套在其他天數。</li>
+            <li><b>小工具使用</b>：右側面板有各種按鈕可產生時鐘、抽籤、紅綠燈。按著小工具頂部即可自由拖曳。上方小工具列皆可開關控制小工具功能。</li>
+            <li><b>防呆鎖定</b>：為避免上課時誤觸，點擊左側「🔓 解鎖中」可切換為「🔒 已鎖定」，此時無法移動工具跟編輯表格。</li>
+            <li><b>調整排版</b>：可以透過拖拉表格標題（科目、時間、能量條...等）的分隔線來改變欄寬。</li>
         </ul>
         
         <div style="text-align:center; margin-top:25px;">
-            <button onclick="document.getElementById('instruction-modal').style.display='none';" style="background:#6c5ce7; color:white; border:none; padding:12px 35px; border-radius:30px; font-size:15px; cursor:pointer; font-weight:bold; transition:all 0.3s; box-shadow:0 4px 15px rgba(108,92,231,0.3);">我知道了，開始體驗 V6.0！</button>
+            <button onclick="document.getElementById('instruction-modal').style.display='none';" style="background:#2ecc71; color:white; border:none; padding:10px 30px; border-radius:8px; font-size:16px; cursor:pointer; font-weight:bold;">我知道了，開始使用！</button>
         </div>
     </div>
 </div>
