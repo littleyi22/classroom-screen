@@ -120,7 +120,6 @@
         .title-ctrl { display: flex; gap: 4px; }
         .top-account-info { margin-left: auto; font-size: 12px; font-weight: bold; opacity: 0.8; padding-right: 5px; }
 
-        .exam-table { width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.3); table-layout: fixed; color: inherit; border-radius: var(--border-radius-md); overflow: hidden; box-shadow: var(--card-shadow); }
         .exam-table { width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.3); table-layout: fixed; color: inherit; border-radius: var(--border-radius-md); overflow: hidden; box-shadow: var(--card-shadow); border: 2px solid var(--text-color); }
         .exam-table th { background: rgba(0, 0, 0, 0.05); font-weight: 700; border: 2px solid var(--text-color); padding: 10px 8px; text-align: center; position: relative; }
         .exam-table td { border: 2px solid var(--text-color); padding: 8px 6px; text-align: center; overflow-wrap: anywhere; vertical-align: middle; position: relative; transition: background-color 0.2s; }
@@ -284,6 +283,19 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 <body id="main-body">
 
+<div id="toast-container" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 10000; display: flex; flex-direction: column; gap: 10px; pointer-events: none;"></div>
+
+<div id="custom-confirm-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); backdrop-filter: blur(5px); z-index:10000; justify-content:center; align-items:center;">
+    <div style="background:#fff; width:90%; max-width:400px; padding:25px; border-radius:12px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.2);">
+        <h3 id="confirm-title" style="margin-bottom:15px; color:#2c3e50;">確認</h3>
+        <p id="confirm-message" style="margin-bottom:25px; color:#555; font-size:15px; line-height:1.5;"></p>
+        <div style="display:flex; justify-content:center; gap:15px;">
+            <button id="confirm-cancel" class="btn" style="padding:8px 20px;">取消</button>
+            <button id="confirm-ok" class="btn btn-save" style="padding:8px 20px;">確定</button>
+        </div>
+    </div>
+</div>
+
 <div id="mobile-clock-header">00:00:00</div>
 
 <div id="save-loading">
@@ -431,6 +443,43 @@
     var cloudFileId = null; // 儲存在 Google Drive 的檔案 ID
     var accessToken = null;
 
+    window.showToast = function(msg, type = 'info') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        const bg = type === 'error' ? '#e74c3c' : (type === 'warning' ? '#e67e22' : (type === 'success' ? '#2ecc71' : '#34495e'));
+        toast.style.cssText = `background: ${bg}; color: white; padding: 10px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-size: 14px; font-weight: bold; opacity: 0; transform: translateY(-20px); transition: all 0.3s ease;`;
+        toast.innerText = msg;
+        container.appendChild(toast);
+        setTimeout(() => { toast.style.opacity = '1'; toast.style.transform = 'translateY(0)'; }, 10);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(-20px)';
+            setTimeout(() => toast.remove(), 300);
+        }, 2500);
+    };
+
+    window.customConfirm = function(msg, callback, title = "確認動作") {
+        const modal = document.getElementById('custom-confirm-modal');
+        document.getElementById('confirm-title').innerText = title;
+        document.getElementById('confirm-message').innerHTML = msg.replace(/\n/g, '<br>');
+        const btnOk = document.getElementById('confirm-ok');
+        const btnCancel = document.getElementById('confirm-cancel');
+        modal.style.display = 'flex';
+        const cleanup = () => {
+            modal.style.display = 'none';
+            btnOk.removeEventListener('click', handleOk);
+            btnCancel.removeEventListener('click', handleCancel);
+        };
+        const handleOk = () => { cleanup(); callback(true); };
+        const handleCancel = () => { cleanup(); callback(false); };
+        btnOk.addEventListener('click', handleOk);
+        btnCancel.addEventListener('click', handleCancel);
+    };
+
+    window.customConfirmAsync = function(msg, title = "確認動作") {
+        return new Promise(resolve => window.customConfirm(msg, resolve, title));
+    };
+
     window.footerVisible = true; // 預設顯示下方控制欄
     window.leftPanelVisible = true; // 預設顯示左方段考表格欄
     window.rightPanelVisible = true; // 預設顯示右方小工具欄
@@ -474,7 +523,6 @@
 
     window.onload = function() {
         window.loadFromLocalStorage();
-        initResizableTable();
         
         const container = document.querySelector('.dashboard-container');
         // 監聽輸入
@@ -771,15 +819,17 @@
 
     window.saveData = function() {
         window.saveToLocalStorage();
-        alert("資料已儲存在本機。");
+        window.showToast("資料已儲存在本機。", "success");
         if(accessToken) window.syncToCloud(); 
     };
 
     window.resetSystem = function() {
-        if (confirm("確定要清空所有資料嗎？(包含本機快取)")) {
-            localStorage.removeItem(STORAGE_KEY);
-            location.reload();
-        }
+        window.customConfirm("確定要清空所有資料嗎？(包含本機快取)", function(res) {
+            if (res) {
+                localStorage.removeItem(STORAGE_KEY);
+                location.reload();
+            }
+        }, "清空資料");
     };
 
     // Google Login Callback
@@ -801,32 +851,34 @@
         var logoutBtn = document.getElementById('btn-google-logout');
         if (logoutBtn) logoutBtn.style.display = 'block';
 
-        alert("Google 登入成功：" + profile.name + "\n接下來將嘗試啟用雲端同步...");
+        window.showToast("Google 登入成功：" + profile.name, "success");
         
         window.saveToLocalStorage();
         window.requestDrivePermission();
     };
 
     window.logoutGoogle = function() {
-        if (confirm("確定要登出 Google 帳號嗎？\n(登出後將切換為本機存檔模式)")) {
-            accessToken = null;
-            cloudFileId = null;
-            localStorage.removeItem('google_access_token');
-            currentUser = { id: '本機用戶', email: '' };
-            document.getElementById('display-id').innerText = '---';
-            document.getElementById('top-display-id').innerText = 'ID: 本機存檔';
-            
-            var logoutBtn = document.getElementById('btn-google-logout');
-            if (logoutBtn) logoutBtn.style.display = 'none';
-            var signinBtn = document.querySelector('.g_id_signin');
-            if (signinBtn) signinBtn.style.display = 'block';
-            
-            var status = document.getElementById('cloud-status');
-            if (status) {
-                status.style.display = 'none';
+        window.customConfirm("確定要登出 Google 帳號嗎？\n(登出後將切換為本機存檔模式)", function(res) {
+            if (res) {
+                accessToken = null;
+                cloudFileId = null;
+                localStorage.removeItem('google_access_token');
+                currentUser = { id: '本機用戶', email: '' };
+                document.getElementById('display-id').innerText = '---';
+                document.getElementById('top-display-id').innerText = 'ID: 本機存檔';
+                
+                var logoutBtn = document.getElementById('btn-google-logout');
+                if (logoutBtn) logoutBtn.style.display = 'none';
+                var signinBtn = document.querySelector('.g_id_signin');
+                if (signinBtn) signinBtn.style.display = 'block';
+                
+                var status = document.getElementById('cloud-status');
+                if (status) {
+                    status.style.display = 'none';
+                }
+                window.showToast("已成功登出 Google 帳號。", "success");
             }
-            alert("已成功登出 Google 帳號。");
-        }
+        }, "登出確認");
     };
 
     /** 請求 Google Drive 權限 */
@@ -874,7 +926,7 @@
                 });
                 const cloudData = await getResp.json();
                 if(cloudData && cloudData.days) {
-                    if (confirm("發現雲端有備份存檔，是否要將「雲端資料」下載並覆蓋目前的本機資料？")) {
+                    if (await window.customConfirmAsync("發現雲端有備份存檔，是否要將「雲端資料」下載並覆蓋目前的本機資料？", "發現雲端備份")) {
                         allDaysData = cloudData.days;
                         currentUser = cloudData.user || currentUser;
                         
@@ -1043,12 +1095,12 @@
                     const dayToLoad = data.lastActiveDay || 1;
                     window.switchDay(dayToLoad, true);
                     window.saveToLocalStorage();
-                    alert("匯入成功！");
+                    window.showToast("匯入成功！", "success");
                 } else {
-                    alert("無效的備份檔案格式。");
+                    window.showToast("無效的備份檔案格式。", "error");
                 }
             } catch (err) {
-                alert("讀取檔案失敗：" + err.message);
+                window.showToast("讀取檔案失敗：" + err.message, "error");
             }
         };
         reader.readAsText(file);
@@ -1145,13 +1197,15 @@
     };
 
     window.copyDayOne = function() {
-        if (currentDay === 1) { alert("你目前就在第1天，不需要複製。"); return; }
-        if (!allDaysData[1]) { alert("第1天還沒有存檔資料，無法複製。"); return; }
-        if (!confirm("確定要將「第1天」的所有設定（科目表、背景）複製覆蓋到目前這一天嗎？\n(原本這一天的內容會消失)")) return;
-        
-        var copiedData = JSON.parse(JSON.stringify(allDaysData[1]));
-        window.renderDashboard(copiedData);
-        alert("複製成功！請記得存檔。");
+        if (currentDay === 1) { window.showToast("你目前就在第1天，不需要複製。", "warning"); return; }
+        if (!allDaysData[1]) { window.showToast("第1天還沒有存檔資料，無法複製。", "error"); return; }
+        window.customConfirm("確定要將「第1天」的所有設定（科目表、背景）複製覆蓋到目前這一天嗎？\n(原本這一天的內容會消失)", function(res) {
+            if (res) {
+                var copiedData = JSON.parse(JSON.stringify(allDaysData[1]));
+                window.renderDashboard(copiedData);
+                window.showToast("複製成功！請記得存檔。", "success");
+            }
+        }, "複製第一天");
     };
 
     window.renderDashboard = function(data) {
@@ -1233,7 +1287,7 @@
     window.addTableRow = function(data) {
         // 列數限制檢查
         var currentRows = document.querySelectorAll('#exam-tbody tr').length;
-        if (currentRows >= 10) { alert("最多只能新增 10 列科目喔！"); return; }
+        if (currentRows >= 10) { window.showToast("最多只能新增 10 列科目喔！", "warning"); return; }
 
         var tr = document.createElement('tr');
         if(data && data.bold) tr.style.fontWeight = 'bold';
@@ -1244,7 +1298,7 @@
             '<label class="btn-sm">A<input type="color" value="' + (data?.color || '#000000') + '" onchange="this.closest(\'tr\').style.color=this.value"></label>' +
             '<button class="btn-sm" style="color:red" onclick="this.closest(\'tr\').remove(); window.triggerAutoSave();">✖</button></div></td>';
         var subCell = tr.cells[0]; subCell.contentEditable = "true";
-        subCell.addEventListener('input', function() { if (this.innerText.length > 20) { this.innerText = this.innerText.substring(0, 20); alert("科目上限 20 字"); } });
+        subCell.addEventListener('input', function() { if (this.innerText.length > 20) { this.innerText = this.innerText.substring(0, 20); window.showToast("科目上限 20 字", "warning"); } });
         document.getElementById('exam-tbody').appendChild(tr);
         window.triggerAutoSave();
     };
@@ -1294,13 +1348,13 @@
     };
 
     function createWidget(type, data, styleType) {
-        if (type === 'digital' && styleType === 'default') { if (document.querySelectorAll('.widget-digital:not(.style-hacker)').length >= 1) return alert("白色數位時鐘只能 1 個"); }
-        if (type === 'digital' && styleType === 'hacker') { if (document.querySelectorAll('.style-hacker').length >= 1) return alert("駭客數位時鐘只能 1 個"); }
-        if (type === 'analog') { if (document.querySelectorAll('.widget-analog').length >= 1) return alert("指針時鐘只能 1 個"); }
-        if (type === 'traffic') { if (document.querySelectorAll('.widget-traffic').length >= 1) return alert("紅綠燈只能 1 個"); }
-        if (type === 'announce') { if (document.querySelectorAll('.widget-announce').length >= 3) return alert("公告欄最多 3 個"); }
-        if (type === 'note') { if (document.querySelectorAll('.widget-note').length >= 3) return alert("便利貼最多 3 個"); }
-        if (type === 'picker') { if (document.querySelectorAll('.widget-picker').length >= 1) return alert("抽籤工具只能 1 個"); }
+        if (type === 'digital' && styleType === 'default') { if (document.querySelectorAll('.widget-digital:not(.style-hacker)').length >= 1) return window.showToast("白色數位時鐘只能 1 個", "warning"); }
+        if (type === 'digital' && styleType === 'hacker') { if (document.querySelectorAll('.style-hacker').length >= 1) return window.showToast("駭客數位時鐘只能 1 個", "warning"); }
+        if (type === 'analog') { if (document.querySelectorAll('.widget-analog').length >= 1) return window.showToast("指針時鐘只能 1 個", "warning"); }
+        if (type === 'traffic') { if (document.querySelectorAll('.widget-traffic').length >= 1) return window.showToast("紅綠燈只能 1 個", "warning"); }
+        if (type === 'announce') { if (document.querySelectorAll('.widget-announce').length >= 3) return window.showToast("公告欄最多 3 個", "warning"); }
+        if (type === 'note') { if (document.querySelectorAll('.widget-note').length >= 3) return window.showToast("便利貼最多 3 個", "warning"); }
+        if (type === 'picker') { if (document.querySelectorAll('.widget-picker').length >= 1) return window.showToast("抽籤工具只能 1 個", "warning"); }
 
         var board = document.getElementById('right-panel');
         var w = document.createElement('div');
@@ -1476,13 +1530,6 @@
         });
     }, 1000);
 
-    // --- 加強版自動存檔：每 10 秒儲存一次狀態到本機瀏覽器 ---
-    setInterval(function() {
-        if (!isLocked) {
-           allDaysData[currentDay] = window.getCurrentState();
-           window.saveToLocalStorage();
-        }
-    }, 10000);
 
     window.onclick = function(e) { 
         var m = document.getElementById('bg-selector'); 
